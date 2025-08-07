@@ -1,0 +1,398 @@
+// ============================================================================
+// AI COMPANION APP - FINAL PRISMA SCHEMA (CHAT MODE)
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER MANAGEMENT & AUTHENTICATION (CLERK)
+// ============================================================================
+
+model User {
+  id          String   @id @default(cuid())
+  clerkId     String   @unique
+  email       String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Basic Profile (Required for MVP)
+  name       String?
+  age        Int?
+  location   String?
+  occupation String?
+
+  // Psychology Profile (Optional, JSON structure)
+  psychologyProfile Json? // UserPsychology interface
+
+  // Onboarding Progress Tracking
+  onboardingCompleted Boolean @default(false)
+  currentStep         String  @default("basic") // basic, psychology, companion, relationship, avatar
+  stepsCompleted      String[] @default([])
+
+  // Relations
+  companions    Companion[]
+  conversations Conversation[]
+  memories      Memory[]
+  preferences   UserPreferences?
+  relationshipDynamic RelationshipDynamic?
+
+  @@index([clerkId])
+  @@index([email])
+  @@map("users")
+}
+
+// ============================================================================
+// AI COMPANION (PARTNER) PROFILE
+// ============================================================================
+
+model Companion {
+  id         String @id @default(cuid())
+  userId     String
+  name       String
+  gender     String // 'male' | 'female' | 'non-binary'
+  age        Int
+  location   String?
+  occupation String?
+
+  // Avatar System
+  avatarUrl       String? // Selected avatar URL
+  avatarCategory  String? // casual, professional, artistic
+
+  // Behavioral Design (from onboarding)
+  behavioralDesign Json? // PartnerDesign interface
+
+  // Character Consistency Tracking
+  personalityVersion Int @default(1) // Increment when behavioral design changes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations       Conversation[]
+  relationshipDynamic RelationshipDynamic?
+
+  @@index([userId])
+  @@map("companions")
+}
+
+// ============================================================================
+// RELATIONSHIP DYNAMICS & CONTEXT
+// ============================================================================
+
+model RelationshipDynamic {
+  id          String            @id @default(cuid())
+  userId      String            @unique
+  companionId String            @unique
+
+  // Relationship Status
+  status RelationshipStatus
+
+  // Conditional Context (based on status)
+  relationshipHistory Json? // RelationshipHistory or EarlyRelationship interface
+
+  // Content Boundaries
+  contentBoundaries Json? // User-defined content limits
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companion Companion @relation(fields: [companionId], references: [id], onDelete: Cascade)
+
+  @@map("relationship_dynamics")
+}
+
+// ============================================================================
+// CONVERSATION MANAGEMENT
+// ============================================================================
+
+model Conversation {
+  id          String   @id @default(cuid())
+  userId      String
+  companionId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Conversation Metadata
+  title        String?  // Auto-generated or user-defined
+  isActive     Boolean  @default(true)
+  lastActivity DateTime @default(now())
+
+  // Message Statistics
+  messageCount    Int @default(0)
+  userMessages    Int @default(0)
+  aiMessages      Int @default(0)
+  deletedMessages Int @default(0)
+  editedMessages  Int @default(0)
+
+  // Conversation Branches (for message editing)
+  branches Json? // Track conversation branch structure
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companion Companion @relation(fields: [companionId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  sessions  ConversationSession[]
+
+  @@index([userId])
+  @@index([companionId])
+  @@index([lastActivity])
+  @@map("conversations")
+}
+
+// ============================================================================
+// MESSAGE SYSTEM (WITH REPLY, EDIT, DELETE FEATURES)
+// ============================================================================
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // === MESSAGE CONTENT ===
+  content String @db.Text // Use TEXT for longer messages
+  role    MessageRole
+
+  // Reply System
+  replyToId   String?
+  hasReplies  Boolean @default(false)
+  replyDepth  Int     @default(0) // For nested reply threading
+
+  // Edit & Branching System
+  isEdited     Boolean @default(false)
+  editCount    Int     @default(0)
+  editHistory  Json?   // Array of {content, editedAt, branchId}
+  branchId     String? @default("main") // Conversation branch identifier
+  originalContent String? @db.Text // Store original content
+
+  // Delete System (independent of memories)
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  deletedBy   DeletedBy? // USER or SYSTEM
+  deleteReason String?   // Reason for deletion
+
+  // Memory Association Tracking (for debugging, not functionality)
+  memoryGenerated Boolean @default(false) // Whether this message generated memories
+  memoryCount     Int     @default(0)     // How many memories generated
+
+  // Message Metadata
+  wordCount      Int?     // For analytics
+  characterCount Int?     // For analytics
+  sentiment      String?  // positive, negative, neutral
+  isImportant    Boolean  @default(false) // User can mark important
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  replyTo      Message?     @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies      Message[]    @relation("MessageReplies")
+
+  // Indexes for Performance
+  @@index([conversationId, createdAt])
+  @@index([conversationId, branchId])
+  @@index([conversationId, isDeleted])
+  @@index([replyToId])
+  @@map("messages")
+}
+
+// ============================================================================
+// MEMORY SYSTEM (SEMANTIC MEMORY WITH VECTOR DB)
+// ============================================================================
+
+model Memory {
+  id        String   @id @default(cuid())
+  userId    String   // Owner of memory
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // === MEMORY CONTENT ===
+  content String @db.Text // The actual memory content
+  summary String?         // Brief summary for UI
+
+  // === MEMORY CLASSIFICATION ===
+  type       MemoryType
+  category   String?    // "personality", "preference", "event", "relationship"
+  tags       String[]   @default([]) // Searchable tags
+  importance Int        @default(5)  // 1-10 importance scale
+
+  // === VECTOR DATABASE INTEGRATION ===
+  vectorId      String? // Pinecone vector ID
+  embeddingMeta Json?   // Embedding metadata
+
+  // === CONTEXT (without direct message linking) ===
+  conversationContext Json?   // General context when created
+  emotionalContext    String? // Emotional state when memory formed
+  temporalContext     Json?   // Time, date, season when created
+
+  // === USER CONTROL ===
+  isVisible     Boolean @default(true)  // User can see this memory
+  isEditable    Boolean @default(false) // User can edit this memory
+  userCreated   Boolean @default(false) // AI vs user created
+  userNotes     String? // User can add notes
+
+  // === MEMORY USAGE STATISTICS ===
+  accessCount   Int       @default(0) // How often referenced in AI responses
+  lastAccessed  DateTime? // When last used in response
+  usefulness    Float?    // AI feedback on memory utility (0.0-1.0)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for Performance
+  @@index([userId, type])
+  @@index([userId, importance])
+  @@index([userId, category])
+  @@index([vectorId])
+  @@index([userId, createdAt])
+  @@index([userId, isVisible])
+  @@map("memories")
+}
+
+// ============================================================================
+// ANALYTICS & SESSION TRACKING
+// ============================================================================
+
+model ConversationSession {
+  id             String @id @default(cuid())
+  conversationId String
+  userId         String
+  startedAt      DateTime @default(now())
+  endedAt        DateTime?
+
+  // Session Metrics
+  messageCount  Int @default(0)
+  userMessages  Int @default(0)
+  aiMessages    Int @default(0)
+  duration      Int? // in seconds
+
+  // Memory Activity
+  memoriesCreated  Int @default(0) // New memories from this session
+  memoriesAccessed Int @default(0) // Memories retrieved for context
+  memoryQuality    Float? // Quality score of generated memories
+
+  // User Engagement
+  messagesEdited  Int @default(0)
+  messagesDeleted Int @default(0)
+  repliesUsed     Int @default(0)
+  branchesCreated Int @default(0)
+
+  // Session Quality
+  userSatisfaction Int?    // 1-5 rating if collected
+  sessionRating    String? // "good", "great", "poor"
+  feedbackNotes    String? // User feedback
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+  @@index([conversationId])
+  @@map("conversation_sessions")
+}
+
+// ============================================================================
+// USER PREFERENCES & SETTINGS
+// ============================================================================
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Chat Preferences
+  enableTypingIndicators Boolean @default(true)
+  enableNotifications    Boolean @default(true)
+  chatTheme             String  @default("default") // light, dark, auto
+  messageTimestamps      Boolean @default(true)
+  soundEffects          Boolean @default(false)
+
+  // Memory Preferences
+  memoryRetentionDays       Int     @default(365)    // Days to keep memories
+  memoryImportanceThreshold Int     @default(3)      // Minimum importance to store
+  autoMemoryDeletion        Boolean @default(false)  // Auto-delete old memories
+  memoryPrivacyLevel        String  @default("balanced") // strict, balanced, open
+
+  // AI Behavior Settings
+  responseStyle     String @default("adaptive") // adaptive, consistent, varied
+  responseLength    String @default("medium")   // short, medium, long, adaptive
+  creativityLevel   Float  @default(0.7)        // 0.0 to 1.0
+  emotionalDepth    Float  @default(0.8)        // How emotionally expressive
+  memoryReference   String @default("natural")  // natural, frequent, minimal
+
+  // Privacy & Safety
+  dataRetentionDays   Int     @default(365)  // How long to keep data
+  allowDataExport     Boolean @default(true)
+  allowAnalytics      Boolean @default(true)
+  contentFiltering    String  @default("moderate") // strict, moderate, minimal
+
+  // Notification Preferences
+  emailNotifications    Boolean @default(false)
+  pushNotifications     Boolean @default(true)
+  reminderNotifications Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+enum MemoryType {
+  // User characteristics
+  PERSONALITY_TRAIT
+  BEHAVIORAL_PATTERN
+  EMOTIONAL_TRIGGER
+
+  // User preferences
+  PREFERENCE
+  INTEREST
+  DISLIKE
+
+  // Relationship information
+  RELATIONSHIP_DYNAMIC
+  SHARED_EXPERIENCE
+  INTIMATE_MOMENT
+  CONFLICT_RESOLUTION
+
+  // Life context
+  LIFE_EVENT
+  FAMILY_INFO
+  CAREER_INFO
+
+  // Future-oriented
+  GOAL
+  FEAR
+  DREAM
+}
+
+enum RelationshipStatus {
+  JUST_MET
+  EARLY_DATING
+  COMMITTED
+  LIVING_TOGETHER
+  MARRIED
+}
+
+enum DeletedBy {
+  USER
+  SYSTEM
+}
