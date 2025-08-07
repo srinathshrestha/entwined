@@ -22,6 +22,11 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import {
+  TypingIndicatorSkeleton,
+  ChatHistorySkeleton,
+  AssistantMessageSkeleton,
+} from "@/components/chat/ChatSkeleton";
 
 export default function ChatPage() {
   const { user } = useUser();
@@ -37,6 +42,7 @@ export default function ChatPage() {
   } | null>(null);
   const [editingMessage, setEditingMessage] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -75,6 +81,7 @@ export default function ChatPage() {
 
     const loadConversationHistory = async () => {
       try {
+        setIsLoadingHistory(true);
         const response = await fetch("/api/chat");
         if (response.ok) {
           const data = await response.json();
@@ -84,6 +91,8 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error("Error loading conversation history:", error);
+      } finally {
+        setIsLoadingHistory(false);
       }
     };
 
@@ -224,7 +233,10 @@ export default function ChatPage() {
 
       {/* Messages */}
       <div className="max-w-4xl mx-auto h-[calc(100vh-140px)] overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && (
+        {/* Show skeleton loading while history is loading */}
+        {isLoadingHistory ? (
+          <ChatHistorySkeleton />
+        ) : messages.length === 0 ? (
           <div className="text-center py-12">
             <Heart className="h-12 w-12 text-rose-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -235,144 +247,140 @@ export default function ChatPage() {
               building your relationship!
             </p>
           </div>
-        )}
+        ) : null}
 
-        {messages.map((message) => {
-          const isUser = message.role === "user";
-          const displayContent = getMessageDisplayContent(message);
+        {!isLoadingHistory &&
+          messages.map((message) => {
+            const isUser = message.role === "user";
+            const displayContent = getMessageDisplayContent(message);
 
-          return (
-            <div
-              key={message.id}
-              className={`flex ${
-                isUser ? "justify-end" : "justify-start"
-              } group`}
-            >
-              <div className={`max-w-[70%] ${isUser ? "order-2" : "order-1"}`}>
-                {displayContent.replyTo && (
-                  <div className="text-xs text-gray-500 mb-1 px-3">
-                    Replying to: &quot;{displayContent.replyTo}...&quot;
-                  </div>
-                )}
-
+            return (
+              <div
+                key={message.id}
+                className={`flex ${
+                  isUser ? "justify-end" : "justify-start"
+                } group`}
+              >
                 <div
-                  className={`rounded-2xl px-4 py-2 ${
-                    isUser
-                      ? "bg-rose-600 text-white"
-                      : "bg-white text-gray-900 border border-gray-200"
-                  }`}
+                  className={`max-w-[70%] ${isUser ? "order-2" : "order-1"}`}
                 >
-                  {editingMessage === message.id ? (
-                    <div className="space-y-2">
-                      <Input
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="text-sm"
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            saveEdit(message.id);
-                          } else if (e.key === "Escape") {
-                            cancelEdit();
-                          }
-                        }}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => saveEdit(message.id)}
-                          className="h-6 text-xs"
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={cancelEdit}
-                          className="h-6 text-xs"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
+                  {displayContent.replyTo && (
+                    <div className="text-xs text-gray-500 mb-1 px-3">
+                      Replying to: &quot;{displayContent.replyTo}...&quot;
                     </div>
-                  ) : (
-                    <>
-                      <p className="text-sm">{displayContent.content}</p>
-                      {"isEdited" in message && message.isEdited && (
-                        <span className="text-xs opacity-70 italic">
-                          {" "}
-                          (edited)
-                        </span>
-                      )}
-                    </>
                   )}
-                </div>
 
-                <div className="flex items-center gap-1 mt-1 px-2">
-                  <span className="text-xs text-gray-500">
-                    {format(new Date(message.createdAt || Date.now()), "HH:mm")}
-                  </span>
-
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 ml-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleReply(message)}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Reply className="h-3 w-3" />
-                    </Button>
-
-                    {isUser ? (
+                  <div
+                    className={`rounded-2xl px-4 py-2 ${
+                      isUser
+                        ? "bg-rose-600 text-white"
+                        : "bg-white text-gray-900 border border-gray-200"
+                    }`}
+                  >
+                    {editingMessage === message.id ? (
+                      <div className="space-y-2">
+                        <Input
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="text-sm"
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              saveEdit(message.id);
+                            } else if (e.key === "Escape") {
+                              cancelEdit();
+                            }
+                          }}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => saveEdit(message.id)}
+                            className="h-6 text-xs"
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={cancelEdit}
+                            className="h-6 text-xs"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
                       <>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() =>
-                            handleEdit(message.id, displayContent.content)
-                          }
-                          className="h-6 w-6 p-0"
-                        >
-                          <Edit2 className="h-3 w-3" />
-                        </Button>
+                        <p className="text-sm">{displayContent.content}</p>
+                        {"isEdited" in message && message.isEdited && (
+                          <span className="text-xs opacity-70 italic">
+                            {" "}
+                            (edited)
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 mt-1 px-2">
+                    <span className="text-xs text-gray-500">
+                      {format(
+                        new Date(message.createdAt || Date.now()),
+                        "HH:mm"
+                      )}
+                    </span>
+
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 ml-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleReply(message)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Reply className="h-3 w-3" />
+                      </Button>
+
+                      {isUser ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              handleEdit(message.id, displayContent.content)
+                            }
+                            className="h-6 w-6 p-0"
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDelete(message.id)}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </>
+                      ) : (
+                        // Bot message - only show delete option
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDelete(message.id)}
                           className="h-6 w-6 p-0"
+                          title="Delete this message"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
-                      </>
-                    ) : (
-                      // Bot message - only show delete option
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDelete(message.id)}
-                        className="h-6 w-6 p-0"
-                        title="Delete this message"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-white text-gray-900 border border-gray-200 rounded-2xl px-4 py-2 max-w-[70%]">
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
-              </div>
-            </div>
-          </div>
-        )}
+        {isLoading && <TypingIndicatorSkeleton />}
 
         <div ref={messagesEndRef} />
       </div>

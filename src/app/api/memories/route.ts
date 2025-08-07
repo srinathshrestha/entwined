@@ -22,11 +22,11 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Get user's memories
+    // Get user's memories (only visible ones)
     const memories = await db.memory.findMany({
       where: {
         userId: user.id,
-        isDeleted: false,
+        isVisible: true, // Use isVisible instead of isDeleted
       },
       orderBy: { createdAt: "desc" },
       take: 500, // Limit to last 500 memories
@@ -106,10 +106,10 @@ export async function DELETE(req: NextRequest) {
       });
     }
 
-    // Soft delete the memory
+    // Hide the memory (soft delete by making it invisible)
     await db.memory.update({
       where: { id: memoryId },
-      data: { isDeleted: true },
+      data: { isVisible: false },
     });
 
     return new Response(JSON.stringify({ success: true }), {

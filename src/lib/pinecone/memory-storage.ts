@@ -1,6 +1,7 @@
 import { pineconeIndex, getUserNamespace } from "./client";
 import { generateEmbedding } from "../ai/embeddings";
 import { db } from "../db";
+import { AI_CIRCUIT_BREAKERS } from "../ai/circuit-breaker";
 
 /**
  * Store a memory vector in Pinecone with deduplication and robust error handling
@@ -72,13 +73,23 @@ export async function storeMemoryVector(
       accessCount: 0,
     };
 
-    // Upsert vector to Pinecone with retry logic
-    await upsertVectorWithRetry(
-      userId,
-      memoryId,
-      embedding,
-      vectorMetadata,
-      3 // max retries
+    // Upsert vector to Pinecone with circuit breaker protection
+    await AI_CIRCUIT_BREAKERS.pinecone.execute(
+      async () => {
+        await upsertVectorWithRetry(
+          userId,
+          memoryId,
+          embedding,
+          vectorMetadata,
+          3 // max retries
+        );
+      },
+      // Fallback - still return success even if Pinecone fails
+      async () => {
+        console.warn(
+          `Pinecone unavailable - memory ${memoryId} stored only in PostgreSQL`
+        );
+      }
     );
 
     // Update the memory record in PostgreSQL with vector ID

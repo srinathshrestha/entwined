@@ -425,7 +425,7 @@ export async function prefetchUserMemories(
     const memories = await db.memory.findMany({
       where: {
         userId,
-        isDeleted: false,
+        isVisible: true, // Only visible memories
         importance: { gte: 5 }, // Only high-importance memories
       },
       orderBy: [

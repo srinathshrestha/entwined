@@ -11,6 +11,9 @@ export default clerkMiddleware(async (auth, req) => {
   // Protect all routes except public ones
   if (!isPublicRoute(req)) {
     await auth.protect();
+
+    // Note: User namespace initialization happens in API routes when needed
+    // to avoid blocking middleware and client-side bundle issues
   }
 });
 

@@ -15,6 +15,7 @@ import { db } from "@/lib/db";
 import { UserPsychology, PartnerDesign } from "@/types";
 import { MemoryType } from "@prisma/client";
 import { streamText } from "ai";
+import { getUserAndInitialize } from "@/lib/auth/user-init";
 
 // GET endpoint to load conversation history
 export async function GET(req: NextRequest) {
@@ -26,6 +27,9 @@ export async function GET(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
       });
     }
+
+    // Initialize user resources (namespace, etc.) in background
+    await getUserAndInitialize(clerkId);
 
     // Get user and their conversation
     const user = await db.user.findUnique({ where: { clerkId } });
@@ -94,6 +98,9 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
       });
     }
+
+    // Initialize user resources (namespace, etc.) in background
+    await getUserAndInitialize(clerkId);
 
     const body = await req.json();
 

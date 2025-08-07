@@ -7,7 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup-pinecone": "tsx src/scripts/setup-pinecone.ts"
+    "setup-pinecone": "tsx src/scripts/setup-pinecone.ts",
+    "cleanup:db": "tsx src/scripts/cleanup-database.ts",
+    "reset:db": "tsx src/scripts/cleanup-database.ts reset",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "deploy:prepare": "npm run lint && npm run build && npm run migrate:deploy",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",

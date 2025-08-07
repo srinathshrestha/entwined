@@ -13,11 +13,11 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Get user and their settings
+    // Get user and their preferences
     const user = await db.user.findUnique({
       where: { clerkId },
       include: {
-        userSettings: true,
+        preferences: true,
       },
     });
 
@@ -28,16 +28,22 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Return settings or defaults
-    const settings = user.userSettings || {
-      responseLength: "balanced",
-      emotionalIntensity: 50,
-      initiativeLevel: 50,
-      memorySensitivity: 50,
-      memoryCreation: true,
-      blacklistedTopics: "",
-      safeMode: false,
-      autoDeleteDays: "never",
+    // Return settings based on preferences or defaults
+    const preferences = user.preferences;
+    const settings = {
+      responseLength: preferences?.responseLength || "medium",
+      emotionalIntensity: Math.round(
+        (preferences?.emotionalDepth || 0.8) * 100
+      ),
+      initiativeLevel: Math.round((preferences?.creativityLevel || 0.7) * 100),
+      memorySensitivity: preferences?.memoryImportanceThreshold || 3,
+      memoryCreation: !preferences?.autoMemoryDeletion ?? true,
+      blacklistedTopics: "", // This would need a separate field in preferences
+      safeMode: preferences?.contentFiltering === "strict",
+      autoDeleteDays:
+        preferences?.memoryRetentionDays === 365
+          ? "never"
+          : preferences?.memoryRetentionDays?.toString() || "never",
     };
 
     return new Response(JSON.stringify({ settings }), {
@@ -66,7 +72,10 @@ export async function POST(req: NextRequest) {
     const settings = await req.json();
 
     // Get user
-    const user = await db.user.findUnique({ where: { clerkId } });
+    const user = await db.user.findUnique({
+      where: { clerkId },
+      include: { preferences: true },
+    });
     if (!user) {
       return new Response(JSON.stringify({ error: "User not found" }), {
         status: 404,
@@ -74,17 +83,30 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Upsert settings - for now we'll store as JSON in user table since UserSettings model may not exist
-    await db.user.update({
-      where: { id: user.id },
-      data: {
-        // Store settings in a JSON field if available, or we can extend the user model
-        // For now, let's assume we store in a separate settings table or extend user model
-        // This is a placeholder - you may need to adjust based on your schema
+    // Convert settings back to preferences format
+    const preferenceData = {
+      responseLength: settings.responseLength || "medium",
+      emotionalDepth: (settings.emotionalIntensity || 50) / 100,
+      creativityLevel: (settings.initiativeLevel || 50) / 100,
+      memoryImportanceThreshold: settings.memorySensitivity || 3,
+      autoMemoryDeletion: !settings.memoryCreation,
+      contentFiltering: settings.safeMode ? "strict" : "moderate",
+      memoryRetentionDays:
+        settings.autoDeleteDays === "never"
+          ? 365
+          : parseInt(settings.autoDeleteDays) || 365,
+    };
+
+    // Upsert user preferences
+    await db.userPreferences.upsert({
+      where: { userId: user.id },
+      update: preferenceData,
+      create: {
+        userId: user.id,
+        ...preferenceData,
       },
     });
 
-    // For now, let's just return success - in production you'd want to store these properly
     return new Response(JSON.stringify({ success: true, settings }), {
       headers: { "Content-Type": "application/json" },
     });
