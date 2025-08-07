@@ -7,25 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Send,
-  MoreHorizontal,
-  Reply,
-  Edit2,
-  Trash2,
-  Heart,
-  X,
-  Settings,
-  User,
-  Menu,
-} from "lucide-react";
+import { Send, Reply, Edit2, Trash2, Heart, X, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
   TypingIndicatorSkeleton,
   ChatHistorySkeleton,
-  AssistantMessageSkeleton,
 } from "@/components/chat/ChatSkeleton";
 
 export default function ChatPage() {
@@ -56,7 +44,7 @@ export default function ChatPage() {
     api: "/api/chat",
     initialMessages: [],
     streamProtocol: "text", // Use text protocol to match our API response
-    onResponse: async (response) => {
+    onResponse: async () => {
       console.log("AI response received");
     },
     onError: (error) => {
@@ -418,7 +406,7 @@ export default function ChatPage() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  onSubmit(e as any);
+                  onSubmit(e as React.FormEvent<HTMLFormElement>);
                 }
               }}
               style={{

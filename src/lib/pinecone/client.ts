@@ -1,4 +1,6 @@
 // Conditional Pinecone import to avoid client-side issues
+let pinecone: typeof import("@pinecone-database/pinecone").Pinecone | null =
+  null;
 let pineconeIndex: any = null;
 
 // Only initialize on server side
@@ -6,12 +8,19 @@ if (typeof window === "undefined" && process.env.PINECONE_API_KEY) {
   try {
     const { Pinecone } = require("@pinecone-database/pinecone");
 
-    const pinecone = new Pinecone({
+    pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY!,
     });
 
-    pineconeIndex = pinecone.index(process.env.PINECONE_INDEX_NAME!);
-    console.log("Pinecone client initialized successfully");
+    // Create index if it doesn't exist
+    const indexName =
+      process.env.PINECONE_INDEX_NAME || "ai-companion-memories";
+
+    // Use the index method correctly
+    pineconeIndex = pinecone.index(indexName);
+    console.log(
+      `Pinecone client initialized successfully with index: ${indexName}`
+    );
   } catch (error) {
     console.warn("Failed to initialize Pinecone client:", error);
   }
@@ -21,7 +30,7 @@ if (typeof window === "undefined" && process.env.PINECONE_API_KEY) {
   );
 }
 
-export { pineconeIndex };
+export { pinecone, pineconeIndex };
 
 // User namespace isolation
 export function getUserNamespace(userId: string): string {

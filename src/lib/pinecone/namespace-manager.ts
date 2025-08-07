@@ -6,8 +6,9 @@
  */
 
 // Conditional imports to avoid client-side issues
-let pineconeIndex: any = null;
-let db: any = null;
+let pineconeIndex: typeof import("@pinecone-database/pinecone").Index | null =
+  null;
+let db: typeof import("@prisma/client").PrismaClient | null = null;
 
 // Only import on server side
 if (typeof window === "undefined") {
@@ -33,8 +34,8 @@ export interface NamespaceInfo {
  * Generate a unique namespace for a user
  */
 export function generateUserNamespace(userId: string): string {
-  // Use the user's cuid as the namespace - it's already unique and safe
-  return `user_${userId}`;
+  // Use a clean format for namespace: user-{userId} (Pinecone prefers hyphens)
+  return `user-${userId}`;
 }
 
 /**

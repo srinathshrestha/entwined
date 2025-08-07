@@ -519,7 +519,7 @@ export async function searchMemoriesOptimized(
   options: SearchOptions = {}
 ): Promise<SearchedMemory[]> {
   // Check cache first
-  let cachedMemories = getCachedMemories(userId);
+  const cachedMemories = getCachedMemories(userId);
 
   // Start vector search in parallel with cache check
   const vectorSearchPromise = searchRelevantMemories(userId, query, {

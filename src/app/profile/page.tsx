@@ -60,8 +60,8 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Customize your AI companion's personality, behavior patterns,
-                and emotional responses.
+                Customize your AI companion&apos;s personality, behavior
+                patterns, and emotional responses.
               </p>
               <Button
                 onClick={() => router.push("/onboarding/companion")}
@@ -104,8 +104,8 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Change your companion's avatar and update basic information like
-                names, ages, and locations.
+                Change your companion&apos;s avatar and update basic information
+                like names, ages, and locations.
               </p>
               <Button
                 onClick={() => router.push("/onboarding/avatar")}

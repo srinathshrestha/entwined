@@ -97,19 +97,21 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    let whereClause: any = {
-      conversation: {
-        userId: user.id,
-      },
-    };
+    // Build the where clause based on the request
+    let whereClause: Record<string, any>;
 
-    // Either delete by date range or specific message IDs
     if (messageIds && messageIds.length > 0) {
-      whereClause.id = { in: messageIds };
+      whereClause = {
+        conversation: { userId: user.id },
+        id: { in: messageIds },
+      };
     } else if (startDate && endDate) {
-      whereClause.createdAt = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
+      whereClause = {
+        conversation: { userId: user.id },
+        createdAt: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
       };
     } else {
       return new Response(

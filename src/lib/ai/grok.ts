@@ -153,7 +153,9 @@ export async function generateStreamResponse(
         },
       };
 
-      return mockStream as any;
+      return mockStream as AsyncIterable<{
+        choices: { delta: { content: string } }[];
+      }>;
     }
   );
 }

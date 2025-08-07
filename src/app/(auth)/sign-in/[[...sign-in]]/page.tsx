@@ -20,6 +20,13 @@ export default function SignInPage() {
               card: "shadow-lg border border-gray-200",
               headerTitle: "text-lg font-semibold",
               headerSubtitle: "text-gray-600",
+              footer: "hidden", // Hide development mode footer
+              footerAction: "hidden", // Hide development mode links
+            },
+            layout: {
+              logoImageUrl: "", // Remove Clerk logo
+              showOptionalFields: false,
+              logoPlacement: "none",
             },
           }}
           redirectUrl="/chat"

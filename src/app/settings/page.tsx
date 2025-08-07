@@ -231,7 +231,7 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">
-                    Customize your AI companion's personality and behavior
+                    Customize your AI companion&apos;s personality and behavior
                     patterns.
                   </p>
                   <Button
@@ -272,7 +272,7 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">
-                    Change your companion's avatar and basic information.
+                    Change your companion&apos;s avatar and basic information.
                   </p>
                   <Button
                     onClick={() => router.push("/onboarding/avatar")}
@@ -333,7 +333,7 @@ export default function SettingsPage() {
                       Blacklisted Topics
                     </Label>
                     <p className="text-sm text-gray-500">
-                      Topics the AI won't create memories about
+                      Topics the AI won&apos;t create memories about
                       (comma-separated)
                     </p>
                     <Textarea
