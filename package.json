@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && next build",
     "setup-pinecone": "tsx src/scripts/setup-pinecone.ts",
     "cleanup:db": "tsx src/scripts/cleanup-database.ts",
     "reset:db": "tsx src/scripts/cleanup-database.ts reset",
