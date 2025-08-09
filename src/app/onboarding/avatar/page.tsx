@@ -12,9 +12,11 @@ import { toast } from "sonner";
 
 interface AvatarOption {
   id: string;
-  url: string;
-  category: string;
+  code: string;
   name: string;
+  description: string;
+  category: string;
+  url: string;
 }
 
 export default function AvatarPage() {
@@ -72,6 +74,7 @@ export default function AvatarPage() {
         body: JSON.stringify({
           avatarUrl: selectedAvatar.url,
           avatarCategory: selectedAvatar.category,
+          avatarPersonality: selectedAvatar.code,
         }),
       });
 
@@ -143,9 +146,9 @@ export default function AvatarPage() {
             Choose {companionInfo.name}&apos;s Avatar
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Select how you want {companionInfo.name} to appear in your
-            conversations. You can change this anytime from your profile
-            settings.
+            Choose {companionInfo.name}&apos;s personality style. This will
+            determine how they communicate and connect with you. Each
+            personality has its own unique tone and approach to conversations.
           </p>
         </div>
 

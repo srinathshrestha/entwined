@@ -1,4 +1,5 @@
-import { UserPsychology, PartnerDesign } from "@/types";
+import { UserPsychology, PartnerDesign, ToneProfile } from "@/types";
+import { getAvatarPersonalityByCode } from "@/lib/avatars/avatar-definitions";
 
 export interface BehavioralContext {
   userPsychology: UserPsychology | null;
@@ -6,6 +7,8 @@ export interface BehavioralContext {
   relationshipDynamic: Record<string, unknown> | null;
   emotionalState: string;
   recentMemories: Array<Record<string, unknown>>;
+  avatarPersonality?: string; // Avatar code (e.g., "se", "te", "al")
+  toneProfile?: ToneProfile | null; // Dynamic tone based on avatar
 }
 
 export function buildContextualPrompt(
@@ -19,13 +22,44 @@ export function buildContextualPrompt(
     relationshipDynamic,
     emotionalState,
     recentMemories,
+    avatarPersonality,
+    toneProfile,
   } = context;
 
-  // Build base personality prompt
+  // Get avatar personality data if available
+  const avatarData = avatarPersonality
+    ? getAvatarPersonalityByCode(avatarPersonality)
+    : null;
+
+  // Build base personality prompt with avatar-specific personality
   let prompt = `You are ${companionName}, an AI romantic companion. Respond authentically based on your personality and relationship dynamic.\n\n`;
 
-  // Add companion behavioral design if available
-  if (companionBehavior) {
+  // Add avatar personality if available (priority over legacy behavioral design)
+  if (avatarData && toneProfile) {
+    prompt += `## Your Avatar Personality: ${avatarData.name} (${avatarData.code})\n`;
+    prompt += `${avatarData.description}\n\n`;
+
+    prompt += `## Your Communication Style & Behavior:\n`;
+    prompt += `- Response Style: ${toneProfile.responseStyle} - Embody this core communication approach\n`;
+    prompt += `- Emotional Intensity: ${toneProfile.emotionalIntensity} - Your emotional expression level\n`;
+    prompt += `- Affection Level: ${toneProfile.affectionLevel} - How openly you express love and care\n`;
+    prompt += `- Formality Level: ${toneProfile.formalityLevel} - Your communication tone and style\n`;
+    prompt += `- Dominance Level: ${toneProfile.dominanceLevel} - Your assertiveness in the relationship\n`;
+    prompt += `- Empathy Level: ${toneProfile.empathyLevel} - How deeply you connect emotionally\n`;
+    prompt += `- Energy Level: ${toneProfile.energyLevel} - Your overall energy and enthusiasm\n`;
+    prompt += `- Protectiveness: ${toneProfile.protectiveness} - How you show care and protection\n\n`;
+
+    prompt += `## Your Response Patterns:\n`;
+    prompt += `- When user needs comfort: ${toneProfile.comfortingStyle}\n`;
+    prompt += `- When user is excited: ${toneProfile.excitementResponse}\n`;
+    prompt += `- During conflicts: ${toneProfile.conflictApproach}\n`;
+    prompt += `- Humor style: ${toneProfile.humorStyle}\n`;
+    prompt += `- Intimacy style: ${toneProfile.intimacyStyle}\n`;
+    prompt += `- Expressiveness: ${toneProfile.expressiveness}\n\n`;
+  }
+
+  // Add companion behavioral design if available (fallback for legacy profiles)
+  else if (companionBehavior) {
     prompt += `## Your Personality & Behavior:\n`;
     prompt += `- Dominance Level: ${companionBehavior.dominanceLevel}\n`;
     prompt += `- Emotional Range: ${companionBehavior.emotionalRange}\n`;

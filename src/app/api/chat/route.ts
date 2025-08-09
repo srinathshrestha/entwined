@@ -13,6 +13,7 @@ import {
 } from "@/lib/ai/behavioral-framework";
 import { db } from "@/lib/db";
 import { UserPsychology, PartnerDesign } from "@/types";
+import { getAvatarPersonalityByCode } from "@/lib/avatars/avatar-definitions";
 import { MemoryType } from "@prisma/client";
 import { streamText } from "ai";
 import { getUserAndInitialize } from "@/lib/auth/user-init";
@@ -233,6 +234,12 @@ export async function POST(req: NextRequest) {
     // Build contextual prompt with enhanced error handling
     let contextualPrompt: string;
     try {
+      // Get avatar personality data for dynamic tone
+      const avatarPersonality = companion.avatarPersonality;
+      const avatarData = avatarPersonality
+        ? getAvatarPersonalityByCode(avatarPersonality)
+        : null;
+
       contextualPrompt = buildContextualPrompt(
         {
           userPsychology: user?.psychologyProfile as UserPsychology | null,
@@ -244,6 +251,8 @@ export async function POST(req: NextRequest) {
             > | null,
           emotionalState,
           recentMemories: relevantMemories as Array<Record<string, unknown>>,
+          avatarPersonality: avatarPersonality || undefined,
+          toneProfile: avatarData?.toneProfile || null,
         },
         cleanMessage,
         companion.name

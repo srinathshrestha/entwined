@@ -6,7 +6,8 @@ import { z } from "zod";
 // Avatar selection validation schema
 const avatarSelectionSchema = z.object({
   avatarUrl: z.string().min(1, "Avatar URL is required"),
-  avatarCategory: z.string().min(1, "Avatar category is required"),
+  avatarCategory: z.string().min(1, "Avatar category is required"), // romantic, intimate, companion
+  avatarPersonality: z.string().min(1, "Avatar personality is required"), // se, te, al, de, etc.
 });
 
 export async function POST(req: NextRequest) {
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
       data: {
         avatarUrl: validatedData.avatarUrl,
         avatarCategory: validatedData.avatarCategory,
+        avatarPersonality: validatedData.avatarPersonality,
       },
     });
 
@@ -125,6 +127,7 @@ export async function GET(req: NextRequest) {
         gender: companion.gender,
         avatarUrl: companion.avatarUrl,
         avatarCategory: companion.avatarCategory,
+        avatarPersonality: companion.avatarPersonality,
         currentStep: user.currentStep,
         stepsCompleted: user.stepsCompleted,
         onboardingCompleted: user.onboardingCompleted,

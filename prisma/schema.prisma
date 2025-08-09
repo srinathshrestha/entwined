@@ -61,9 +61,10 @@ model Companion {
   location   String?
   occupation String?
 
-  // Avatar System
+  // Avatar System (New relationship-based categories)
   avatarUrl       String? // Selected avatar URL
-  avatarCategory  String? // casual, professional, artistic
+  avatarCategory  String? // romantic, intimate, companion
+  avatarPersonality String? // Avatar personality code (se, te, al, de, co, in, wa, cl, nu, pl, wi, lo)
 
   // Behavioral Design (from onboarding)
   behavioralDesign Json? // PartnerDesign interface

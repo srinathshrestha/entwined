@@ -45,6 +45,9 @@ export async function GET() {
         age: companion.age,
         location: companion.location,
         occupation: companion.occupation,
+        avatarUrl: companion.avatarUrl,
+        avatarCategory: companion.avatarCategory,
+        avatarPersonality: companion.avatarPersonality,
       },
     });
   } catch (error) {

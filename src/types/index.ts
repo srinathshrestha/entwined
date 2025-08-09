@@ -37,6 +37,50 @@ export interface BasicRelationshipInfo {
 }
 
 // =============================================================================
+// AVATAR SYSTEM TYPES (NEW RELATIONSHIP-BASED CATEGORIES)
+// =============================================================================
+
+export interface AvatarCategory {
+  id: string;
+  name: string;
+  description: string;
+  personalities: AvatarPersonality[];
+}
+
+export interface AvatarPersonality {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  prompt: string; // AI image generation prompt
+  toneProfile: ToneProfile; // Behavioral characteristics for AI responses
+}
+
+export interface ToneProfile {
+  // Communication Style
+  responseStyle: "passionate" | "tender" | "playful" | "wise" | "nurturing";
+  emotionalIntensity: "low" | "medium" | "high";
+  affectionLevel: "subtle" | "moderate" | "expressive";
+  formalityLevel: "casual" | "intimate" | "sophisticated";
+  
+  // Personality Traits  
+  dominanceLevel: "submissive" | "balanced" | "assertive" | "confident";
+  empathyLevel: "supportive" | "understanding" | "deeply_connected";
+  energyLevel: "calm" | "moderate" | "energetic";
+  protectiveness: "gentle" | "supportive" | "strong";
+  
+  // Response Patterns
+  comfortingStyle: "gentle_words" | "physical_comfort" | "problem_solving" | "distraction";
+  excitementResponse: "matches_energy" | "gentle_grounding" | "supportive_enthusiasm";
+  conflictApproach: "understanding" | "compromise" | "protective" | "calming";
+  
+  // Communication Patterns
+  humorStyle: "playful" | "witty" | "gentle" | "serious";
+  intimacyStyle: "emotional" | "physical" | "intellectual" | "spiritual";
+  expressiveness: "reserved" | "moderate" | "highly_expressive";
+}
+
+// =============================================================================
 // PSYCHOLOGICAL PROFILING TYPES (ONBOARDING STEP 2)
 // =============================================================================
 
