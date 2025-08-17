@@ -265,51 +265,14 @@ async function extractAndStoreSimplifiedMemories(
     console.log(`😊 Emotional state: ${emotionalState}`);
 
     // Use AI to determine if this conversation contains memory-worthy content
-    const memoryExtractionPrompt = `
-You are a memory extraction AI. Analyze this conversation and extract ONLY genuinely important memories.
+    const memoryExtractionPrompt = `Extract important memories from: "${userMessage}"
 
-CONVERSATION:
-User: "${userMessage}"
-Assistant: "${aiResponse}"
-Emotional Context: ${emotionalState}
+Find personal facts: preferences, goals, relationships, work, hobbies.
 
-MEMORY CRITERIA - Extract memories ONLY if they contain:
-1. 🎯 Personal preferences/dislikes (food, activities, places, etc.)
-2. 📅 Significant life events/experiences (past/future plans)
-3. 😊 Strong emotional moments/patterns (fears, joys, concerns)
-4. 💕 Relationship information (family, friends, romantic)
-5. 🎯 Goals, aspirations, or fears
-6. 🎨 Hobbies, interests, or passions
-7. 👨‍👩‍👧‍👦 Family/social details (names, relationships)
-8. 💼 Work/career information (job, studies, projects)
+JSON format only:
+{"memories": [{"content": "fact", "tags": ["tag1"], "importance": 1-10, "emotionalContext": "${emotionalState}"}]}
 
-QUALITY RULES:
-- Create 1-3 memories maximum per conversation
-- Be specific and factual, not vague
-- Focus on NEW information about the user
-- Avoid generic responses or small talk
-- Each memory should be a complete, standalone fact
-
-IMPORTANCE SCALE:
-- 1-3: Minor preferences (likes coffee)
-- 4-6: Moderate facts (works as teacher)
-- 7-8: Important personal info (family member names)
-- 9-10: Life-changing events (moving, marriage, death)
-
-OUTPUT FORMAT (strict JSON only):
-{
-  "memories": [
-    {
-      "content": "Specific factual memory (20-50 words)",
-      "tags": ["2-4", "relevant", "keywords"],
-      "importance": 1-10,
-      "emotionalContext": "emotional state"
-    }
-  ]
-}
-
-If NO significant memory content is found, return: {"memories": []}
-`;
+Return {"memories": []} if nothing important.`;
 
     // Multi-layered memory extraction approach
     let memoryResult;
@@ -323,8 +286,8 @@ If NO significant memory content is found, return: {"memories": []}
           { role: "user", content: "Analyze the conversation for memories." },
         ],
         {
-          temperature: 0.3,
-          maxTokens: 500,
+          temperature: 0.1,
+          maxTokens: 100,
         }
       );
 
@@ -676,6 +639,27 @@ function extractMemoriesFromText(
       importance: 6,
       tags: ["emotions", "feelings"],
     },
+    // Adult/intimate content preferences
+    {
+      regex:
+        /(can i|want to|like to) (talk dirty|be naughty|get intimate|be sexy) ([^.!?]*)/gi,
+      importance: 7,
+      tags: ["intimacy", "preferences"],
+    },
+    // General intimate requests
+    {
+      regex:
+        /(talk dirty|be intimate|be sexy|be naughty|get close) (to|with) (you|me) ([^.!?]*)/gi,
+      importance: 7,
+      tags: ["intimacy", "desires"],
+    },
+    // Direct intimate expressions
+    {
+      regex:
+        /I (want|need|crave|desire) (you|intimacy|closeness|passion) ([^.!?]*)/gi,
+      importance: 7,
+      tags: ["intimacy", "desires"],
+    },
   ];
 
   for (const pattern of patterns) {
@@ -688,11 +672,11 @@ function extractMemoriesFromText(
       if (match.length >= 4 && match[3]) {
         // For patterns with 3+ capture groups (like food preferences)
         contentPart = `${match[2]} ${match[3]}`.trim();
-        fullContent = `User ${match[1]} ${contentPart}`;
+        fullContent = `User ${match[1] || "likes"} ${contentPart}`;
       } else if (match.length >= 3 && match[2]) {
         // For patterns with 2 capture groups
         contentPart = match[2].trim();
-        fullContent = `User ${match[1]} ${contentPart}`;
+        fullContent = `User ${match[1] || "likes"} ${contentPart}`;
       }
 
       // Only add if content is meaningful

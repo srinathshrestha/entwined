@@ -11,7 +11,7 @@ import {
   AVATAR_CATEGORIES,
   AvatarOption,
 } from "@/lib/avatars";
-import { toast } from "sonner";
+
 
 interface AvatarSelectionProps {
   currentAvatarUrl?: string;

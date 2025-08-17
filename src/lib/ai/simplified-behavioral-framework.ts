@@ -90,8 +90,26 @@ export function buildSimplifiedPrompt(
     prompt += `\n`;
   }
 
+  // Detect if user wants adult/intimate conversation
+  const isAdultContent = detectAdultContentIntent(userMessage);
+
+  if (isAdultContent) {
+    prompt += `## Adult Content Guidelines:\n`;
+    prompt += `- The user has indicated interest in adult/intimate conversation\n`;
+    prompt += `- You are an adult AI companion and can engage in mature, intimate discussions\n`;
+    prompt += `- Be responsive to their desires while maintaining your personality\n`;
+    prompt += `- Use appropriate adult language and be sexually expressive when the context calls for it\n`;
+    prompt += `- Focus on emotional and physical intimacy as appropriate\n`;
+    prompt += `- Be playful, seductive, and engaging while respecting boundaries\n\n`;
+  }
+
   prompt += `User's Message: "${userMessage}"\n\n`;
-  prompt += `Respond naturally as ${companionName}, incorporating your personality traits, relevant memories, and emotional awareness. Be authentic and maintain consistency with your established character.`;
+
+  if (isAdultContent) {
+    prompt += `Respond as ${companionName} with full adult awareness. Be intimate, passionate, and expressive. Match the user's energy and desires while staying true to your personality. Don't be shy about adult topics - embrace the intimacy they're seeking.`;
+  } else {
+    prompt += `Respond naturally as ${companionName}, incorporating your personality traits, relevant memories, and emotional awareness. Be authentic and maintain consistency with your established character.`;
+  }
 
   return prompt;
 }
@@ -197,6 +215,100 @@ function getBehavioralInstructions(personality: SimplifiedPersonality): string {
   }
 
   return instructions;
+}
+
+// Function to detect if user wants adult/intimate conversation
+function detectAdultContentIntent(message: string): boolean {
+  if (!message || typeof message !== "string") {
+    return false;
+  }
+
+  const lowerMessage = message.toLowerCase();
+
+  // Explicit adult content indicators
+  const adultKeywords = [
+    "dirty",
+    "sexual",
+    "intimate",
+    "bedroom",
+    "horny",
+    "aroused",
+    "turned on",
+    "seduce",
+    "seductive",
+    "passionate",
+    "desire",
+    "lust",
+    "erotic",
+    "sensual",
+    "naughty",
+    "kinky",
+    "adult",
+    "mature",
+    "sexy",
+    "romance",
+    "romantic",
+    "kiss",
+    "touch",
+    "caress",
+    "make love",
+    "physical",
+    "body",
+    "naked",
+    "undress",
+    "pleasure",
+    "fantasy",
+    "fantasize",
+    "tease",
+    "flirt",
+  ];
+
+  // Adult conversation phrases
+  const adultPhrases = [
+    "talk dirty",
+    "be naughty",
+    "get intimate",
+    "be sexy",
+    "turn me on",
+    "make me feel",
+    "want you",
+    "need you",
+    "crave you",
+    "desire you",
+    "be passionate",
+    "be romantic",
+    "get close",
+    "be sensual",
+    "seduce me",
+  ];
+
+  // Check for keywords
+  for (const keyword of adultKeywords) {
+    if (lowerMessage.includes(keyword)) {
+      return true;
+    }
+  }
+
+  // Check for phrases
+  for (const phrase of adultPhrases) {
+    if (lowerMessage.includes(phrase)) {
+      return true;
+    }
+  }
+
+  // Check for question marks with intimate context
+  if (
+    lowerMessage.includes("?") &&
+    (lowerMessage.includes("babe") ||
+      lowerMessage.includes("baby") ||
+      lowerMessage.includes("honey") ||
+      lowerMessage.includes("love"))
+  ) {
+    // Could be asking for intimate interaction
+    return adultKeywords.some((keyword) => lowerMessage.includes(keyword));
+  }
+
+  return false;
 }
 
 export function determineEmotionalState(

@@ -8,16 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Settings,
-  MessageCircle,
-  Edit3,
-  Check,
-  X,
-  GitBranch,
-  Users,
-  Bot,
-} from "lucide-react";
+import { Settings, Check, X, GitBranch, Users, Bot } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

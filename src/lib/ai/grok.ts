@@ -75,15 +75,28 @@ export async function generateResponse(
         }
 
         const content = completion.choices[0]?.message?.content;
+        const finishReason = completion.choices[0].finish_reason;
+
         if (!content || content.trim().length === 0) {
           const errorDetails = {
             hasContent: !!content,
             contentLength: content?.length || 0,
             contentPreview: content?.substring(0, 50) || "null",
-            finishReason: completion.choices[0].finish_reason,
+            finishReason,
             model: "grok-3-mini",
             messageCount: messages.length,
           };
+
+          // Special handling for token limit issues
+          if (finishReason === "length") {
+            console.warn(
+              "🚫 Grok hit token limit during reasoning phase - reducing prompt complexity"
+            );
+            throw new Error(
+              "Token limit exceeded during reasoning - prompt too complex"
+            );
+          }
+
           console.error("Empty/invalid content from Grok:", errorDetails);
           throw new Error(
             `Empty content returned from Grok API - Details: ${JSON.stringify(

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
   Dialog,
   DialogContent,
@@ -13,18 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Brain,
-  Tag,
-  X,
-  Search,
-  Clock,
-  Star,
-  Check,
-  Users,
-  MessageSquare,
-  Sparkles,
-} from "lucide-react";
+import { Brain, Tag, Search, Clock, Star, Check, Users } from "lucide-react";
 import { SimplifiedMemory } from "@/types";
 // ScrollArea component replaced with regular div with overflow
 
