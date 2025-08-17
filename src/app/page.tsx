@@ -29,13 +29,13 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      router.push("/dashboard");
+      router.push("/chat/simplified");
     }
   }, [isLoaded, isSignedIn, router]);
 
   const handleGetStarted = () => {
     if (isSignedIn) {
-      router.push("/dashboard");
+      router.push("/chat/simplified");
     } else {
       router.push("/sign-up");
     }

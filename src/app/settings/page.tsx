@@ -41,9 +41,11 @@ import {
   Clock,
   Star,
   AlertTriangle,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SimplifiedMemory } from "@/types";
+import AvatarSelection from "@/components/settings/AvatarSelection";
 
 interface CompanionData {
   name: string;
@@ -62,12 +64,21 @@ interface CompanionData {
 export default function SettingsPage() {
   const router = useRouter();
   const { user } = useUser();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [companionData, setCompanionData] = useState<CompanionData | null>(null);
+  const [companionData, setCompanionData] = useState<CompanionData | null>(
+    null
+  );
   const [memories, setMemories] = useState<SimplifiedMemory[]>([]);
   const [selectedMemories, setSelectedMemories] = useState<string[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showClearChatDialog, setShowClearChatDialog] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Fix hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Load companion data and memories
   useEffect(() => {
@@ -131,6 +142,35 @@ export default function SettingsPage() {
     }
   };
 
+  const handleAvatarUpdate = async (avatarUrl: string, avatarId: string) => {
+    if (!companionData) return;
+
+    setIsUpdating(true);
+    try {
+      const updatedData = { ...companionData, avatarUrl };
+
+      const response = await fetch("/api/personality", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        setCompanionData(updatedData);
+        toast.success("Avatar updated successfully!");
+      } else {
+        throw new Error("Failed to update avatar");
+      }
+    } catch (error) {
+      console.error("Error updating avatar:", error);
+      toast.error("Failed to update avatar");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const handleDeleteSelectedMemories = async () => {
     if (selectedMemories.length === 0) return;
 
@@ -141,7 +181,7 @@ export default function SettingsPage() {
           method: "DELETE",
         });
       }
-      
+
       toast.success(`Deleted ${selectedMemories.length} memories`);
       setSelectedMemories([]);
       setShowDeleteDialog(false);
@@ -176,15 +216,15 @@ export default function SettingsPage() {
   };
 
   const toggleMemorySelection = (memoryId: string) => {
-    setSelectedMemories(prev => 
-      prev.includes(memoryId) 
-        ? prev.filter(id => id !== memoryId)
+    setSelectedMemories((prev) =>
+      prev.includes(memoryId)
+        ? prev.filter((id) => id !== memoryId)
         : [...prev, memoryId]
     );
   };
 
   const selectAllMemories = () => {
-    setSelectedMemories(memories.map(m => m.id));
+    setSelectedMemories(memories.map((m) => m.id));
   };
 
   const clearSelection = () => {
@@ -197,12 +237,13 @@ export default function SettingsPage() {
     return "text-gray-500";
   };
 
-  if (!companionData) {
+  // Prevent hydration mismatch and wait for data
+  if (!mounted || !user || !companionData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading settings...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading settings...</p>
         </div>
       </div>
     );
@@ -217,37 +258,37 @@ export default function SettingsPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/chat/simplified")}
               className="text-purple-600"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              Back to Chat
             </Button>
             <div className="flex items-center gap-2">
               <SettingsIcon className="h-6 w-6 text-purple-600" />
               <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
             </div>
           </div>
-          <Badge variant="secondary" className="text-purple-600">
-            Simplified System
-          </Badge>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <Tabs defaultValue="personality" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="personality" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger
+              value="personality"
+              className="flex items-center gap-2"
+            >
               <User className="h-4 w-4" />
-              Personality
+            </TabsTrigger>
+            <TabsTrigger value="avatar" className="flex items-center gap-2">
+              <Camera className="h-4 w-4" />
             </TabsTrigger>
             <TabsTrigger value="memories" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
-              Memories
             </TabsTrigger>
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              Chat
             </TabsTrigger>
           </TabsList>
 
@@ -267,18 +308,24 @@ export default function SettingsPage() {
                     <Label>Companion Name</Label>
                     <Input
                       value={companionData.name}
-                      onChange={(e) => setCompanionData(prev => 
-                        prev ? { ...prev, name: e.target.value } : null
-                      )}
+                      onChange={(e) =>
+                        setCompanionData((prev) =>
+                          prev ? { ...prev, name: e.target.value } : null
+                        )
+                      }
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>How to Address You</Label>
                     <Input
                       value={companionData.userPreferredAddress}
-                      onChange={(e) => setCompanionData(prev => 
-                        prev ? { ...prev, userPreferredAddress: e.target.value } : null
-                      )}
+                      onChange={(e) =>
+                        setCompanionData((prev) =>
+                          prev
+                            ? { ...prev, userPreferredAddress: e.target.value }
+                            : null
+                        )
+                      }
                     />
                   </div>
                 </div>
@@ -288,24 +335,48 @@ export default function SettingsPage() {
                   <h3 className="text-lg font-semibold">Personality Traits</h3>
                   <div className="grid md:grid-cols-2 gap-6">
                     {[
-                      { field: "affectionLevel" as keyof CompanionData, icon: Heart, title: "Affection Level", color: "text-red-500" },
-                      { field: "empathyLevel" as keyof CompanionData, icon: Brain, title: "Empathy Level", color: "text-blue-500" },
-                      { field: "curiosityLevel" as keyof CompanionData, icon: Sparkles, title: "Curiosity Level", color: "text-purple-500" },
-                      { field: "playfulness" as keyof CompanionData, icon: Zap, title: "Playfulness", color: "text-yellow-500" },
+                      {
+                        field: "affectionLevel" as keyof CompanionData,
+                        icon: Heart,
+                        title: "Affection Level",
+                        color: "text-red-500",
+                      },
+                      {
+                        field: "empathyLevel" as keyof CompanionData,
+                        icon: Brain,
+                        title: "Empathy Level",
+                        color: "text-blue-500",
+                      },
+                      {
+                        field: "curiosityLevel" as keyof CompanionData,
+                        icon: Sparkles,
+                        title: "Curiosity Level",
+                        color: "text-purple-500",
+                      },
+                      {
+                        field: "playfulness" as keyof CompanionData,
+                        icon: Zap,
+                        title: "Playfulness",
+                        color: "text-yellow-500",
+                      },
                     ].map((trait) => (
                       <div key={trait.field} className="space-y-3">
                         <div className="flex items-center gap-3">
                           <trait.icon className={`h-5 w-5 ${trait.color}`} />
-                          <Label className="text-base font-medium">{trait.title}</Label>
+                          <Label className="text-base font-medium">
+                            {trait.title}
+                          </Label>
                           <div className="text-2xl font-bold text-purple-600 ml-auto">
                             {companionData[trait.field] as number}
                           </div>
                         </div>
                         <Slider
                           value={[companionData[trait.field] as number]}
-                          onValueChange={(value) => setCompanionData(prev => 
-                            prev ? { ...prev, [trait.field]: value[0] } : null
-                          )}
+                          onValueChange={(value) =>
+                            setCompanionData((prev) =>
+                              prev ? { ...prev, [trait.field]: value[0] } : null
+                            )
+                          }
                           max={10}
                           min={1}
                           step={1}
@@ -327,19 +398,31 @@ export default function SettingsPage() {
                     <Label>Humor Style</Label>
                     <Select
                       value={companionData.humorStyle}
-                      onValueChange={(value) => setCompanionData(prev => 
-                        prev ? { ...prev, humorStyle: value } : null
-                      )}
+                      onValueChange={(value) =>
+                        setCompanionData((prev) =>
+                          prev ? { ...prev, humorStyle: value } : null
+                        )
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="playful">🎭 Playful - Light and fun</SelectItem>
-                        <SelectItem value="witty">🧠 Witty - Clever and sharp</SelectItem>
-                        <SelectItem value="gentle">😊 Gentle - Soft and warm</SelectItem>
-                        <SelectItem value="sarcastic">😏 Sarcastic - Dry and ironic</SelectItem>
-                        <SelectItem value="serious">🎯 Serious - Focused and direct</SelectItem>
+                        <SelectItem value="playful">
+                          🎭 Playful - Light and fun
+                        </SelectItem>
+                        <SelectItem value="witty">
+                          🧠 Witty - Clever and sharp
+                        </SelectItem>
+                        <SelectItem value="gentle">
+                          😊 Gentle - Soft and warm
+                        </SelectItem>
+                        <SelectItem value="sarcastic">
+                          😏 Sarcastic - Dry and ironic
+                        </SelectItem>
+                        <SelectItem value="serious">
+                          🎯 Serious - Focused and direct
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -348,30 +431,59 @@ export default function SettingsPage() {
                     <Label>Communication Style</Label>
                     <Select
                       value={companionData.communicationStyle}
-                      onValueChange={(value) => setCompanionData(prev => 
-                        prev ? { ...prev, communicationStyle: value } : null
-                      )}
+                      onValueChange={(value) =>
+                        setCompanionData((prev) =>
+                          prev ? { ...prev, communicationStyle: value } : null
+                        )
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="casual">👕 Casual - Relaxed and informal</SelectItem>
-                        <SelectItem value="formal">👔 Formal - Professional and structured</SelectItem>
-                        <SelectItem value="intimate">💕 Intimate - Close and personal</SelectItem>
-                        <SelectItem value="professional">💼 Professional - Business-like</SelectItem>
+                        <SelectItem value="casual">
+                          👕 Casual - Relaxed and informal
+                        </SelectItem>
+                        <SelectItem value="formal">
+                          👔 Formal - Professional and structured
+                        </SelectItem>
+                        <SelectItem value="intimate">
+                          💕 Intimate - Close and personal
+                        </SelectItem>
+                        <SelectItem value="professional">
+                          💼 Professional - Business-like
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   onClick={handlePersonalityUpdate}
                   disabled={loading}
                   className="w-full bg-purple-600 hover:bg-purple-700"
                 >
                   {loading ? "Updating..." : "Save Personality Changes"}
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Avatar Selection */}
+          <TabsContent value="avatar" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="h-5 w-5 text-purple-600" />
+                  Companion Avatar
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AvatarSelection
+                  currentAvatarUrl={companionData?.avatarUrl}
+                  onAvatarSelect={handleAvatarUpdate}
+                  isLoading={isUpdating}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -401,14 +513,25 @@ export default function SettingsPage() {
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={selectAllMemories}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={selectAllMemories}
+                    >
                       Select All
                     </Button>
-                    <Button variant="outline" size="sm" onClick={clearSelection}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearSelection}
+                    >
                       Clear Selection
                     </Button>
                     {selectedMemories.length > 0 && (
-                      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                      <Dialog
+                        open={showDeleteDialog}
+                        onOpenChange={setShowDeleteDialog}
+                      >
                         <DialogTrigger asChild>
                           <Button variant="destructive" size="sm">
                             <Trash2 className="h-4 w-4 mr-2" />
@@ -419,15 +542,22 @@ export default function SettingsPage() {
                           <DialogHeader>
                             <DialogTitle>Delete Memories</DialogTitle>
                             <DialogDescription>
-                              Are you sure you want to delete {selectedMemories.length} selected memories? 
-                              This action cannot be undone.
+                              Are you sure you want to delete{" "}
+                              {selectedMemories.length} selected memories? This
+                              action cannot be undone.
                             </DialogDescription>
                           </DialogHeader>
                           <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                            <Button
+                              variant="outline"
+                              onClick={() => setShowDeleteDialog(false)}
+                            >
                               Cancel
                             </Button>
-                            <Button variant="destructive" onClick={handleDeleteSelectedMemories}>
+                            <Button
+                              variant="destructive"
+                              onClick={handleDeleteSelectedMemories}
+                            >
                               Delete {selectedMemories.length} Memories
                             </Button>
                           </DialogFooter>
@@ -443,7 +573,9 @@ export default function SettingsPage() {
                     <div className="text-center py-8 text-gray-500">
                       <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>No memories found</p>
-                      <p className="text-sm">Start chatting to create memories!</p>
+                      <p className="text-sm">
+                        Start chatting to create memories!
+                      </p>
                     </div>
                   ) : (
                     memories.map((memory) => (
@@ -452,40 +584,54 @@ export default function SettingsPage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                          selectedMemories.includes(memory.id) 
-                            ? "border-purple-500 bg-purple-50" 
+                          selectedMemories.includes(memory.id)
+                            ? "border-purple-500 bg-purple-50"
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                         onClick={() => toggleMemorySelection(memory.id)}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 space-y-2">
-                            <p className="text-sm text-gray-900">{memory.content}</p>
-                            
+                            <p className="text-sm text-gray-900">
+                              {memory.content}
+                            </p>
+
                             {/* Tags */}
                             {memory.tags.length > 0 && (
                               <div className="flex flex-wrap gap-1">
-                                {memory.tags.map(tag => (
-                                  <Badge key={tag} variant="secondary" className="text-xs">
+                                {memory.tags.map((tag) => (
+                                  <Badge
+                                    key={tag}
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
                                     <Tag className="h-3 w-3 mr-1" />
                                     {tag}
                                   </Badge>
                                 ))}
                               </div>
                             )}
-                            
+
                             {/* Metadata */}
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {new Date(memory.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  memory.createdAt
+                                ).toLocaleDateString()}
                               </div>
-                              <div className={`flex items-center gap-1 ${getImportanceColor(memory.importance)}`}>
+                              <div
+                                className={`flex items-center gap-1 ${getImportanceColor(
+                                  memory.importance
+                                )}`}
+                              >
                                 <Star className="h-3 w-3" />
                                 {memory.importance}/10
                               </div>
                               {memory.userCreated && (
-                                <Badge variant="outline" className="text-xs">User Created</Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  User Created
+                                </Badge>
                               )}
                             </div>
                           </div>
@@ -514,17 +660,22 @@ export default function SettingsPage() {
                     <AlertTriangle className="h-5 w-5" />
                     <h3 className="font-semibold">Danger Zone</h3>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium text-gray-900">Clear All Chat History</h4>
+                      <h4 className="font-medium text-gray-900">
+                        Clear All Chat History
+                      </h4>
                       <p className="text-sm text-gray-600">
-                        This will permanently delete all your conversation history. 
-                        Memories will not be affected.
+                        This will permanently delete all your conversation
+                        history. Memories will not be affected.
                       </p>
                     </div>
-                    
-                    <Dialog open={showClearChatDialog} onOpenChange={setShowClearChatDialog}>
+
+                    <Dialog
+                      open={showClearChatDialog}
+                      onOpenChange={setShowClearChatDialog}
+                    >
                       <DialogTrigger asChild>
                         <Button variant="destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
@@ -535,15 +686,22 @@ export default function SettingsPage() {
                         <DialogHeader>
                           <DialogTitle>Clear All Chat History</DialogTitle>
                           <DialogDescription>
-                            Are you sure you want to delete all your chat conversations? 
-                            This action cannot be undone. Your memories will remain intact.
+                            Are you sure you want to delete all your chat
+                            conversations? This action cannot be undone. Your
+                            memories will remain intact.
                           </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <Button variant="outline" onClick={() => setShowClearChatDialog(false)}>
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowClearChatDialog(false)}
+                          >
                             Cancel
                           </Button>
-                          <Button variant="destructive" onClick={handleClearAllChats}>
+                          <Button
+                            variant="destructive"
+                            onClick={handleClearAllChats}
+                          >
                             Yes, Clear All Chats
                           </Button>
                         </DialogFooter>
@@ -554,7 +712,9 @@ export default function SettingsPage() {
 
                 {/* Chat Features Info */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900 mb-2">Chat Features</h3>
+                  <h3 className="font-semibold text-blue-900 mb-2">
+                    Chat Features
+                  </h3>
                   <ul className="space-y-2 text-sm text-blue-800">
                     <li className="flex items-center gap-2">
                       <Brain className="h-4 w-4" />

@@ -53,14 +53,43 @@ export async function generateResponse(
           stream: options.stream ?? false,
         });
 
+        // Enhanced debugging
+        console.log("Grok API response:", {
+          hasChoices: !!completion.choices,
+          choicesLength: completion.choices?.length || 0,
+          firstChoice: completion.choices?.[0]
+            ? {
+                hasMessage: !!completion.choices[0].message,
+                hasContent: !!completion.choices[0].message?.content,
+                contentLength:
+                  completion.choices[0].message?.content?.length || 0,
+                finishReason: completion.choices[0].finish_reason,
+              }
+            : null,
+          usage: completion.usage,
+        });
+
         // Validate response
         if (!completion.choices || completion.choices.length === 0) {
           throw new Error("No choices returned from Grok API");
         }
 
         const content = completion.choices[0]?.message?.content;
-        if (!content) {
-          throw new Error("Empty content returned from Grok API");
+        if (!content || content.trim().length === 0) {
+          const errorDetails = {
+            hasContent: !!content,
+            contentLength: content?.length || 0,
+            contentPreview: content?.substring(0, 50) || "null",
+            finishReason: completion.choices[0].finish_reason,
+            model: "grok-3-mini",
+            messageCount: messages.length,
+          };
+          console.error("Empty/invalid content from Grok:", errorDetails);
+          throw new Error(
+            `Empty content returned from Grok API - Details: ${JSON.stringify(
+              errorDetails
+            )}`
+          );
         }
 
         console.log(`Grok response generated: ${content.length} characters`);
