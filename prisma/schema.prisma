@@ -39,7 +39,7 @@ model User {
   // Relations
   companions    Companion[]
   conversations Conversation[]
-  memories      Memory[]
+  memories      SimplifiedMemory[]
   preferences   UserPreferences?
   relationshipDynamic RelationshipDynamic?
 
@@ -57,20 +57,23 @@ model Companion {
   userId     String
   name       String
   gender     String // 'male' | 'female' | 'non-binary'
-  age        Int
-  location   String?
-  occupation String?
 
-  // Avatar System (New relationship-based categories)
-  avatarUrl       String? // Selected avatar URL
-  avatarCategory  String? // romantic, intimate, companion
-  avatarPersonality String? // Avatar personality code (se, te, al, de, co, in, wa, cl, nu, pl, wi, lo)
+  // Simplified Personality System (1-10 scales)
+  affectionLevel Int @default(5) // 1-10: How openly affectionate
+  empathyLevel Int @default(5) // 1-10: How empathetic and understanding  
+  curiosityLevel Int @default(5) // 1-10: How curious and inquisitive
+  playfulness Int @default(5) // 1-10: How playful and fun-loving
+  
+  // Style Preferences
+  humorStyle String @default("gentle") // playful, witty, gentle, sarcastic, serious
+  communicationStyle String @default("casual") // casual, formal, intimate, professional
+  
+  // Interaction Preferences
+  userPreferredAddress String @default("you") // How to address the user
+  partnerPronouns String @default("they/them") // he/him, she/her, they/them, other
 
-  // Behavioral Design (from onboarding)
-  behavioralDesign Json? // PartnerDesign interface
-
-  // Character Consistency Tracking
-  personalityVersion Int @default(1) // Increment when behavioral design changes
+  // Avatar (simplified)
+  avatarUrl String? // Optional avatar image
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -78,6 +81,7 @@ model Companion {
   // Relations
   user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations       Conversation[]
+  memories           SimplifiedMemory[]
   relationshipDynamic RelationshipDynamic?
 
   @@index([userId])
@@ -206,56 +210,40 @@ model Message {
 }
 
 // ============================================================================
-// MEMORY SYSTEM (SEMANTIC MEMORY WITH VECTOR DB)
+// SIMPLIFIED MEMORY SYSTEM (DATABASE ONLY)
 // ============================================================================
 
-model Memory {
+model SimplifiedMemory {
   id        String   @id @default(cuid())
   userId    String   // Owner of memory
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // === MEMORY CONTENT ===
-  content String @db.Text // The actual memory content
-  summary String?         // Brief summary for UI
-
-  // === MEMORY CLASSIFICATION ===
-  type       MemoryType
-  category   String?    // "personality", "preference", "event", "relationship"
-  tags       String[]   @default([]) // Searchable tags
+  companionId String // Which companion this memory relates to
+  content   String @db.Text // The actual memory content
+  
+  // User-defined organization
+  tags       String[]   @default([]) // User-defined tags for easy retrieval
   importance Int        @default(5)  // 1-10 importance scale
-
-  // === VECTOR DATABASE INTEGRATION ===
-  vectorId      String? // Pinecone vector ID
-  embeddingMeta Json?   // Embedding metadata
-
-  // === CONTEXT (without direct message linking) ===
-  conversationContext Json?   // General context when created
-  emotionalContext    String? // Emotional state when memory formed
-  temporalContext     Json?   // Time, date, season when created
-
-  // === USER CONTROL ===
-  isVisible     Boolean @default(true)  // User can see this memory
-  isEditable    Boolean @default(false) // User can edit this memory
-  userCreated   Boolean @default(false) // AI vs user created
-  userNotes     String? // User can add notes
-
-  // === MEMORY USAGE STATISTICS ===
-  accessCount   Int       @default(0) // How often referenced in AI responses
-  lastAccessed  DateTime? // When last used in response
-  usefulness    Float?    // AI feedback on memory utility (0.0-1.0)
+  
+  // Context
+  emotionalContext String? // Emotional state when memory formed
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  lastAccessed DateTime? // When last used in response
+  
+  // Control
+  userCreated  Boolean @default(false) // AI vs user created
+  isVisible    Boolean @default(true)  // User can see this memory
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companion Companion @relation(fields: [companionId], references: [id], onDelete: Cascade)
 
   // Indexes for Performance
-  @@index([userId, type])
+  @@index([userId, companionId])
   @@index([userId, importance])
-  @@index([userId, category])
-  @@index([vectorId])
   @@index([userId, createdAt])
-  @@index([userId, isVisible])
-  @@map("memories")
+  @@index([tags])
+  @@map("simplified_memories")
 }
 
 // ============================================================================
@@ -357,33 +345,7 @@ enum MessageRole {
   ASSISTANT
 }
 
-enum MemoryType {
-  // User characteristics
-  PERSONALITY_TRAIT
-  BEHAVIORAL_PATTERN
-  EMOTIONAL_TRIGGER
-
-  // User preferences
-  PREFERENCE
-  INTEREST
-  DISLIKE
-
-  // Relationship information
-  RELATIONSHIP_DYNAMIC
-  SHARED_EXPERIENCE
-  INTIMATE_MOMENT
-  CONFLICT_RESOLUTION
-
-  // Life context
-  LIFE_EVENT
-  FAMILY_INFO
-  CAREER_INFO
-
-  // Future-oriented
-  GOAL
-  FEAR
-  DREAM
-}
+// Removed MemoryType enum - using simplified tags instead
 
 enum RelationshipStatus {
   JUST_MET

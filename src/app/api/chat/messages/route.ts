@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 
-// DELETE endpoint to delete a message
+// DELETE endpoint to delete a message or clear all chat history
 export async function DELETE(req: NextRequest) {
   try {
     const { userId: clerkId } = await auth();
@@ -16,19 +16,44 @@ export async function DELETE(req: NextRequest) {
     // Get messageId from URL search params
     const url = new URL(req.url);
     const messageId = url.searchParams.get("messageId");
+    const clearAll = url.searchParams.get("clearAll");
 
-    if (!messageId) {
-      return new Response(JSON.stringify({ error: "Message ID required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // Get user to verify ownership
+    // Get user first
     const user = await db.user.findUnique({ where: { clerkId } });
     if (!user) {
       return new Response(JSON.stringify({ error: "User not found" }), {
         status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle clearing all chat history
+    if (clearAll === "true") {
+      // Delete all messages for this user
+      const deleteResult = await db.message.deleteMany({
+        where: {
+          conversation: {
+            userId: user.id,
+          },
+        },
+      });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `Deleted ${deleteResult.count} messages`,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Handle single message deletion
+    if (!messageId) {
+      return new Response(JSON.stringify({ error: "Message ID required for single message deletion" }), {
+        status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }

@@ -2,8 +2,8 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,31 +13,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Heart,
   Brain,
   Sparkles,
-  ChevronRight,
-  Play,
-  Pause,
   ArrowRight,
   Zap,
-  Globe,
-  Shield,
+  MessageCircle,
+  Settings,
 } from "lucide-react";
-import { AVATAR_CATEGORIES } from "@/lib/avatars/avatar-definitions";
 
 export default function HomePage() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
-  const [currentPersonalityIndex, setCurrentPersonalityIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-
-  // Get all personalities for showcase
-  const allPersonalities = AVATAR_CATEGORIES.flatMap((category) =>
-    category.personalities.map((p) => ({ ...p, categoryName: category.name }))
-  );
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
@@ -45,423 +33,231 @@ export default function HomePage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  // Auto-cycle through personalities
-  useEffect(() => {
-    if (!isAutoPlaying) return;
+  const handleGetStarted = () => {
+    if (isSignedIn) {
+      router.push("/dashboard");
+    } else {
+      router.push("/sign-up");
+    }
+  };
 
-    const interval = setInterval(() => {
-      setCurrentPersonalityIndex((prev) =>
-        prev >= allPersonalities.length - 1 ? 0 : prev + 1
-      );
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, allPersonalities.length]);
-
-  if (!isLoaded) {
-    return (
-      <motion.div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="rounded-full h-12 w-12 border-4 border-white border-t-transparent"
-        />
-      </motion.div>
-    );
-  }
-
-  if (isSignedIn) {
-    return (
-      <motion.div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="text-center text-white">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"
-          />
-          <p className="text-lg">Redirecting to your dashboard...</p>
-        </div>
-      </motion.div>
-    );
-  }
-
-  const currentPersonality = allPersonalities[currentPersonalityIndex];
+  const features = [
+    {
+      icon: Brain,
+      title: "Memory Tagging",
+      description:
+        "Tag important memories during conversations for personalized AI responses.",
+    },
+    {
+      icon: Heart,
+      title: "Personality Traits",
+      description:
+        "Customize your companion's affection, empathy, curiosity, and playfulness levels.",
+    },
+    {
+      icon: Sparkles,
+      title: "Dynamic Responses",
+      description:
+        "AI responses adapt based on personality settings and conversation history.",
+    },
+    {
+      icon: Zap,
+      title: "Emotional Intelligence",
+      description:
+        "Your companion understands and responds to emotional context appropriately.",
+    },
+    {
+      icon: MessageCircle,
+      title: "Simplified Setup",
+      description:
+        "Get started in under 2 minutes with our streamlined onboarding process.",
+    },
+    {
+      icon: Settings,
+      title: "Easy Customization",
+      description:
+        "Adjust your companion's personality with simple sliders and dropdown menus.",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-white opacity-10"
-            style={{
-              width: Math.random() * 100 + 50,
-              height: Math.random() * 100 + 50,
-              left: Math.random() * 100 + "%",
-              top: Math.random() * 100 + "%",
-            }}
-            animate={{
-              y: [0, -100, 0],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 10 + 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: Math.random() * 5,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Header */}
-      <motion.header
-        className="relative z-10 container mx-auto px-4 py-6"
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <div className="flex justify-between items-center">
-          <motion.div
-            className="flex items-center space-x-3"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            >
-              <Heart className="h-8 w-8 text-pink-400" />
-            </motion.div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-              Entwined
-            </h1>
-          </motion.div>
-          <motion.div
-            className="space-x-4"
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <Button
-              variant="ghost"
-              className="text-white hover:bg-white/10 border border-white/20"
-              onClick={() => router.push("/sign-in")}
-            >
-              Sign In
-            </Button>
-            <Button
-              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white border-0"
-              onClick={() => router.push("/sign-up")}
-            >
-              Get Started
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </motion.div>
-        </div>
-      </motion.header>
-
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Hero Section */}
-      <main className="relative z-10 container mx-auto px-4 py-16">
-        {/* Main Hero Content */}
-        <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-          {/* Left Side - Text Content */}
-          <motion.div
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 1, delay: 0.3 }}
-          >
+      <section className="relative overflow-hidden">
+        <div className="container mx-auto px-4 py-20 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Content */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full border border-purple-300/20 mb-6"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="space-y-8"
             >
-              <Sparkles className="h-4 w-4 text-pink-400 mr-2" />
-              <span className="text-sm font-medium">
-                AI Companion Revolution
-              </span>
-            </motion.div>
-
-            <motion.h2
-              className="text-6xl lg:text-7xl font-bold mb-6 leading-tight"
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 0.6 }}
-            >
-              Meet Your
-              <motion.span
-                className="block bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{ duration: 5, repeat: Infinity }}
-              >
-                Perfect
-              </motion.span>
-              AI Companion
-            </motion.h2>
-
-            <motion.p
-              className="text-xl text-gray-300 mb-8 leading-relaxed"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 0.8 }}
-            >
-              Experience the future of AI relationships. Choose from 12 unique
-              personalities that remember every conversation, adapt to your
-              emotions, and grow with you over time.
-            </motion.p>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 mb-8"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 1 }}
-            >
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-lg px-8 py-3 h-auto"
-                onClick={() => router.push("/sign-up")}
-              >
-                Start Your Journey
+              <div className="space-y-4">
                 <motion.div
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="ml-2"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  <ArrowRight className="h-5 w-5" />
+                  <Badge
+                    variant="outline"
+                    className="text-purple-600 border-purple-300"
+                  >
+                    ✨ Simplified AI Companion
+                  </Badge>
                 </motion.div>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-3 h-auto"
-                onClick={() => router.push("/sign-in")}
-              >
-                Continue Journey
-              </Button>
-            </motion.div>
 
-            {/* Stats */}
-            <motion.div
-              className="flex gap-8"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 1.2 }}
-            >
-              <div className="text-center">
-                <div className="text-2xl font-bold text-pink-400">12</div>
-                <div className="text-sm text-gray-400">Personalities</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">∞</div>
-                <div className="text-sm text-gray-400">Memory</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">24/7</div>
-                <div className="text-sm text-gray-400">Available</div>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Right Side - Interactive Avatar Showcase */}
-          <motion.div
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="relative"
-          >
-            {/* Main Avatar Display */}
-            <motion.div className="relative mx-auto w-80 h-80 mb-8" layout>
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full blur-3xl"
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 4, repeat: Infinity }}
-              />
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentPersonalityIndex}
-                  initial={{ scale: 0, rotate: -180, opacity: 0 }}
-                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                  exit={{ scale: 0, rotate: 180, opacity: 0 }}
-                  transition={{ duration: 0.8, type: "spring" }}
-                  className="relative z-10 w-full h-full flex items-center justify-center"
+                <motion.h1
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight"
                 >
-                  <Avatar className="w-64 h-64 border-4 border-white/20 shadow-2xl">
-                    <AvatarImage
-                      src={`/${currentPersonality.code}.png`}
-                      alt={currentPersonality.name}
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="text-6xl font-bold bg-gradient-to-br from-pink-400 to-purple-400 text-white">
-                      {currentPersonality.code}
-                    </AvatarFallback>
-                  </Avatar>
-                </motion.div>
-              </AnimatePresence>
-            </motion.div>
+                  Simple AI{" "}
+                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    Companionship
+                  </span>
+                </motion.h1>
 
-            {/* Personality Info */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentPersonalityIndex}
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -50, opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-center"
-              >
-                <Badge
-                  variant="secondary"
-                  className="mb-3 bg-white/10 text-white border-white/20"
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                  className="text-xl text-gray-600 leading-relaxed max-w-2xl"
                 >
-                  {currentPersonality.categoryName}
-                </Badge>
-                <h3 className="text-2xl font-bold mb-2">
-                  {currentPersonality.name} ({currentPersonality.code})
-                </h3>
-                <p className="text-gray-300 max-w-md mx-auto">
-                  {currentPersonality.description}
-                </p>
+                  Experience personalized AI companionship with 6 simple
+                  personality traits, manual memory tagging, and streamlined
+                  conversations.
+                </motion.p>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+                className="flex flex-col sm:flex-row gap-4"
+              >
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3"
+                  onClick={handleGetStarted}
+                >
+                  {isSignedIn ? "Go to Dashboard" : "Get Started (2 min setup)"}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-purple-300 text-purple-600 hover:bg-purple-50 px-8 py-3"
+                  onClick={() => router.push("/sign-in")}
+                >
+                  {isSignedIn ? "Continue Chat" : "Sign In"}
+                </Button>
               </motion.div>
-            </AnimatePresence>
+            </motion.div>
 
-            {/* Personality Controls */}
+            {/* Right Column - Demo */}
             <motion.div
-              className="flex justify-center items-center gap-4 mt-6"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 1.4 }}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="relative"
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                className="text-white hover:bg-white/10"
-              >
-                {isAutoPlaying ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-              </Button>
-
-              <div className="flex gap-2">
-                {allPersonalities.map((_, index) => (
-                  <motion.button
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentPersonalityIndex
-                        ? "bg-pink-400"
-                        : "bg-white/30"
-                    }`}
-                    onClick={() => {
-                      setCurrentPersonalityIndex(index);
-                      setIsAutoPlaying(false);
-                    }}
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.9 }}
-                  />
-                ))}
+              <div className="relative z-10">
+                <Card className="bg-white/80 backdrop-blur-sm shadow-2xl border-0">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-sm text-gray-500 ml-auto">
+                        Simplified Chat
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-start">
+                      <div className="bg-gray-100 rounded-2xl px-4 py-2 max-w-xs">
+                        <p className="text-sm">
+                          Hi! I'm your AI companion with simple personality
+                          traits.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl px-4 py-2 max-w-xs">
+                        <p className="text-sm">
+                          Can you remember this conversation?
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-start">
+                      <div className="bg-gray-100 rounded-2xl px-4 py-2 max-w-xs">
+                        <p className="text-sm">
+                          Yes! Just tag memories manually using the brain
+                          button. 🧠
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-center">
+                      <Badge variant="secondary" className="text-xs">
+                        <Brain className="h-3 w-3 mr-1" />
+                        Memory Tagging Available
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </motion.div>
-          </motion.div>
-        </div>
-
-        {/* Features Section */}
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 1.5 }}
-          className="mb-20"
-        >
-          <div className="text-center mb-16">
-            <motion.h3
-              className="text-4xl font-bold mb-4"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.6 }}
-            >
-              Why Choose Entwined?
-            </motion.h3>
-            <motion.p
-              className="text-xl text-gray-300"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.8 }}
-            >
-              Experience the next generation of AI companionship
-            </motion.p>
           </div>
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: Brain,
-                title: "Advanced Memory",
-                description:
-                  "Remember every conversation, emotion, and shared moment",
-                color: "from-blue-400 to-cyan-400",
-                delay: 2,
-              },
-              {
-                icon: Zap,
-                title: "Dynamic Personalities",
-                description:
-                  "12 unique personalities that adapt and evolve with you",
-                color: "from-purple-400 to-pink-400",
-                delay: 2.2,
-              },
-              {
-                icon: Shield,
-                title: "Private & Secure",
-                description:
-                  "Your conversations are encrypted and completely private",
-                color: "from-green-400 to-emerald-400",
-                delay: 2.4,
-              },
-              {
-                icon: Globe,
-                title: "Always Available",
-                description:
-                  "24/7 companionship whenever you need emotional support",
-                color: "from-orange-400 to-red-400",
-                delay: 2.6,
-              },
-            ].map((feature, index) => (
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center space-y-4 mb-16"
+          >
+            <Badge
+              variant="outline"
+              className="text-purple-600 border-purple-300"
+            >
+              Simplified Features
+            </Badge>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+              Simple. Powerful. Personal.
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Everything you need for meaningful AI companionship without the
+              complexity.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
               <motion.div
-                key={index}
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, delay: feature.delay }}
-                whileHover={{ y: -10, scale: 1.05 }}
+                key={feature.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
               >
-                <Card className="bg-white/5 border-white/10 backdrop-blur-sm h-full hover:bg-white/10 transition-all duration-300">
-                  <CardHeader className="text-center pb-2">
-                    <motion.div
-                      className={`mx-auto w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} p-3 mb-4`}
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <feature.icon className="h-6 w-6 text-white" />
-                    </motion.div>
-                    <CardTitle className="text-white text-lg">
-                      {feature.title}
-                    </CardTitle>
+                <Card className="h-full hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-gray-50 to-white">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl">
+                        <feature.icon className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <CardTitle className="text-lg">{feature.title}</CardTitle>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-gray-300 text-center">
+                    <CardDescription className="text-gray-600 leading-relaxed">
                       {feature.description}
                     </CardDescription>
                   </CardContent>
@@ -469,130 +265,38 @@ export default function HomePage() {
               </motion.div>
             ))}
           </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* Avatar Categories Showcase */}
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 2.8 }}
-          className="mb-20"
-        >
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold mb-4">
-              Choose Your Connection Style
-            </h3>
-            <p className="text-xl text-gray-300">
-              Three distinct relationship approaches, each with unique
-              personalities
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-8">
-            {AVATAR_CATEGORIES.map((category, categoryIndex) => (
-              <motion.div
-                key={category.id}
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 3 + categoryIndex * 0.2 }}
-                whileHover={{ scale: 1.02 }}
-              >
-                <Card className="bg-white/5 border-white/10 backdrop-blur-sm h-full hover:bg-white/10 transition-all duration-300">
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-2xl text-white mb-2">
-                      {category.name}
-                    </CardTitle>
-                    <CardDescription className="text-gray-300 text-base">
-                      {category.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      {category.personalities.map((personality) => (
-                        <motion.div
-                          key={personality.id}
-                          className="text-center p-3 bg-white/5 rounded-lg"
-                          whileHover={{
-                            scale: 1.05,
-                            backgroundColor: "rgba(255,255,255,0.1)",
-                          }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <Avatar className="w-12 h-12 mx-auto mb-2">
-                            <AvatarImage
-                              src={`/${personality.code}.png`}
-                              alt={personality.name}
-                            />
-                            <AvatarFallback className="text-xs font-bold bg-gradient-to-br from-pink-400 to-purple-400 text-white">
-                              {personality.code}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="text-white text-sm font-medium">
-                            {personality.name}
-                          </div>
-                          <div className="text-gray-400 text-xs">
-                            {personality.code}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Final CTA */}
-        <motion.div
-          className="text-center"
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 3.8 }}
-        >
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-purple-600 to-blue-600">
+        <div className="container mx-auto px-4 text-center">
           <motion.div
-            className="inline-block p-8 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-3xl border border-white/20 backdrop-blur-sm"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="space-y-8"
           >
-            <h3 className="text-3xl font-bold mb-4">
-              Ready to Begin Your Journey?
-            </h3>
-            <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands discovering meaningful AI relationships. Your
-              perfect companion is waiting.
+            <h2 className="text-3xl lg:text-4xl font-bold text-white">
+              Ready for Simple AI Companionship?
+            </h2>
+            <p className="text-xl text-purple-100 max-w-2xl mx-auto">
+              Get started in under 2 minutes with our streamlined setup process.
             </p>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-xl px-12 py-4 h-auto"
-                onClick={() => router.push("/sign-up")}
+                className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3"
+                onClick={handleGetStarted}
               >
-                Create Your Companion
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="ml-3"
-                >
-                  <Heart className="h-6 w-6" />
-                </motion.div>
+                Start in 2 Minutes
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </motion.div>
+            </div>
           </motion.div>
-        </motion.div>
-      </main>
-
-      {/* Footer */}
-      <motion.footer
-        className="relative z-10 mt-20 border-t border-white/10 py-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 4 }}
-      >
-        <div className="container mx-auto px-4 text-center text-gray-400">
-          <p>© 2024 Entwined. Crafted with ❤️ for meaningful AI connections.</p>
         </div>
-      </motion.footer>
+      </section>
     </div>
   );
 }

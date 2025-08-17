@@ -37,47 +37,35 @@ export interface BasicRelationshipInfo {
 }
 
 // =============================================================================
-// AVATAR SYSTEM TYPES (NEW RELATIONSHIP-BASED CATEGORIES)
+// SIMPLIFIED PERSONALITY SYSTEM
 // =============================================================================
 
-export interface AvatarCategory {
-  id: string;
-  name: string;
-  description: string;
-  personalities: AvatarPersonality[];
+export interface SimplifiedPersonality {
+  // Core Personality Traits (1-10 scale)
+  affectionLevel: number; // 1-10: How openly affectionate
+  empathyLevel: number; // 1-10: How empathetic and understanding
+  curiosityLevel: number; // 1-10: How curious and inquisitive
+  playfulness: number; // 1-10: How playful and fun-loving
+
+  // Style Preferences
+  humorStyle: "playful" | "witty" | "gentle" | "sarcastic" | "serious";
+  communicationStyle: "casual" | "formal" | "intimate" | "professional";
+
+  // Interaction Preferences
+  userPreferredAddress: string; // How to address the user (name, nickname, etc.)
+  partnerPronouns: "he/him" | "she/her" | "they/them" | "other";
 }
 
-export interface AvatarPersonality {
+export interface SimplifiedMemory {
   id: string;
-  code: string;
-  name: string;
-  description: string;
-  prompt: string; // AI image generation prompt
-  toneProfile: ToneProfile; // Behavioral characteristics for AI responses
-}
-
-export interface ToneProfile {
-  // Communication Style
-  responseStyle: "passionate" | "tender" | "playful" | "wise" | "nurturing";
-  emotionalIntensity: "low" | "medium" | "high";
-  affectionLevel: "subtle" | "moderate" | "expressive";
-  formalityLevel: "casual" | "intimate" | "sophisticated";
-  
-  // Personality Traits  
-  dominanceLevel: "submissive" | "balanced" | "assertive" | "confident";
-  empathyLevel: "supportive" | "understanding" | "deeply_connected";
-  energyLevel: "calm" | "moderate" | "energetic";
-  protectiveness: "gentle" | "supportive" | "strong";
-  
-  // Response Patterns
-  comfortingStyle: "gentle_words" | "physical_comfort" | "problem_solving" | "distraction";
-  excitementResponse: "matches_energy" | "gentle_grounding" | "supportive_enthusiasm";
-  conflictApproach: "understanding" | "compromise" | "protective" | "calming";
-  
-  // Communication Patterns
-  humorStyle: "playful" | "witty" | "gentle" | "serious";
-  intimacyStyle: "emotional" | "physical" | "intellectual" | "spiritual";
-  expressiveness: "reserved" | "moderate" | "highly_expressive";
+  userId: string;
+  content: string;
+  tags: string[]; // User-defined tags for easy retrieval
+  importance: number; // 1-10 scale
+  createdAt: Date;
+  lastAccessed?: Date;
+  emotionalContext?: string;
+  userCreated: boolean; // Whether memory was created by user or AI
 }
 
 // =============================================================================
