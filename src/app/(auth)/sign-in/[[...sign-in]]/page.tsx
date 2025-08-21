@@ -36,6 +36,9 @@ export default function SignInPage() {
               socialButtonsBlockButton:
                 "border border-border bg-background hover:bg-muted text-foreground font-medium py-3 px-4 rounded-lg transition-all",
               socialButtonsBlockButtonText: "text-foreground font-medium",
+              
+              // Hide Apple sign-in button
+              socialButtonsBlockButtonApple: "hidden",
 
               // Links and text
               formFieldAction: "text-primary hover:text-primary/80",

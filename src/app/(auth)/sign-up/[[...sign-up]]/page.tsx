@@ -1,4 +1,5 @@
 import { SignUp } from "@clerk/nextjs";
+import Link from "next/link";
 
 export default function SignUpPage() {
   return (
@@ -36,6 +37,9 @@ export default function SignUpPage() {
               socialButtonsBlockButton:
                 "border border-border bg-background hover:bg-muted text-foreground font-medium py-3 px-4 rounded-lg transition-all",
               socialButtonsBlockButtonText: "text-foreground font-medium",
+              
+              // Hide Apple sign-in button
+              socialButtonsBlockButtonApple: "hidden",
 
               // Links and text
               formFieldAction: "text-primary hover:text-primary/80",
@@ -56,8 +60,8 @@ export default function SignUpPage() {
               logoImageUrl: "", // Remove Clerk logo
               showOptionalFields: false,
               logoPlacement: "none",
-              termsPageUrl: undefined,
-              privacyPageUrl: undefined,
+              termsPageUrl: "/terms-of-service",
+              privacyPageUrl: "/privacy-policy",
             },
             variables: {
               // CSS variables for consistent theming
@@ -75,6 +79,27 @@ export default function SignUpPage() {
           redirectUrl="/onboarding"
           afterSignUpUrl="/onboarding"
         />
+        
+        {/* Terms and Privacy Links */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            By creating an account, you agree to our{" "}
+            <Link 
+              href="/terms-of-service" 
+              className="text-primary hover:text-primary/80 underline underline-offset-4"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link 
+              href="/privacy-policy" 
+              className="text-primary hover:text-primary/80 underline underline-offset-4"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </div>
       </div>
     </div>
   );
