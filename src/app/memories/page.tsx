@@ -169,12 +169,12 @@ export default function MemoriesPage() {
     if (importance >= 8) return "bg-red-100 text-red-800";
     if (importance >= 6) return "bg-orange-100 text-orange-800";
     if (importance >= 4) return "bg-yellow-100 text-yellow-800";
-    return "bg-gray-100 text-gray-800";
+    return "bg-muted text-muted-foreground";
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardContent className="p-8">
             <div className="text-center">
@@ -188,7 +188,7 @@ export default function MemoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="flex items-center mb-8">

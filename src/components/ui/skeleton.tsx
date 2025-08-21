@@ -32,10 +32,7 @@ function ShimmerSkeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        "relative overflow-hidden rounded-md bg-gray-200",
-        className
-      )}
+      className={cn("relative overflow-hidden rounded-md bg-muted", className)}
       {...props}
     >
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-gray-300/60 to-transparent" />
@@ -53,7 +50,7 @@ function PulseSkeleton({
   return (
     <div
       className={cn(
-        "animate-[pulse_1.5s_ease-in-out_infinite] rounded-md bg-gray-200",
+        "animate-[pulse_1.5s_ease-in-out_infinite] rounded-md bg-muted",
         className
       )}
       {...props}

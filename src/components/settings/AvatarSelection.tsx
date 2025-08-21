@@ -51,7 +51,7 @@ export default function AvatarSelection({
       case "companion":
         return "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200";
       default:
-        return "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200";
+        return "bg-muted text-muted-foreground border-border hover:bg-muted/80";
     }
   };
 
@@ -183,28 +183,34 @@ export default function AvatarSelection({
 
                       {/* Avatar Info */}
                       <div className="p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-sm text-foreground">
-                            {avatar.name}
-                          </h4>
-                          {isSelected && !isLoading && (
-                            <Badge variant="default" className="text-xs">
-                              Selected
-                            </Badge>
-                          )}
+                        {/* Name and Selected Badge */}
+                        <div className="space-y-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="font-medium text-sm text-foreground leading-tight flex-1 min-w-0">
+                              {avatar.name}
+                            </h4>
+                            {isSelected && !isLoading && (
+                              <Badge
+                                variant="default"
+                                className="text-xs shrink-0 px-2 py-0.5 hidden sm:inline-flex"
+                              >
+                                Selected
+                              </Badge>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            {avatar.description}
+                          </p>
                         </div>
 
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {avatar.description}
-                        </p>
-
                         {/* Personality Tags */}
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 pt-1">
                           {avatar.personality.slice(0, 2).map((trait) => (
                             <Badge
                               key={trait}
                               variant="outline"
-                              className="text-xs px-1.5 py-0.5"
+                              className="text-xs px-1.5 py-0.5 leading-none"
                             >
                               {trait}
                             </Badge>
@@ -212,7 +218,7 @@ export default function AvatarSelection({
                           {avatar.personality.length > 2 && (
                             <Badge
                               variant="outline"
-                              className="text-xs px-1.5 py-0.5"
+                              className="text-xs px-1.5 py-0.5 leading-none"
                             >
                               +{avatar.personality.length - 2}
                             </Badge>

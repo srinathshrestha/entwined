@@ -75,6 +75,9 @@ model Companion {
   // Avatar (simplified)
   avatarUrl String? // Optional avatar image
 
+  // Character Background & Story
+  backStory String? @db.Text // Detailed character background, history, and personality narrative
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -34,6 +34,7 @@ interface CompanionInfo {
   playfulness: number;
   humorStyle: string;
   communicationStyle: string;
+  avatarUrl?: string;
 }
 
 interface MessageBranch {
@@ -51,7 +52,6 @@ export default function SimplifiedChatPageV2() {
   const [companion, setCompanion] = useState<CompanionInfo | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [branches, setBranches] = useState<MessageBranch[]>([]);
-  const [currentBranch, setCurrentBranch] = useState<string>("main");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
@@ -70,73 +70,64 @@ export default function SimplifiedChatPageV2() {
 
   // Check onboarding status
   useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const response = await fetch("/api/personality");
+        if (response.ok) {
+          const data = await response.json();
+          if (!data.companion) {
+            router.push("/onboarding/simplified");
+            return;
+          }
+        } else {
+          router.push("/onboarding/simplified");
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking onboarding status:", error);
+        router.push("/onboarding/simplified");
+        return;
+      } finally {
+        setIsCheckingOnboarding(false);
+      }
+    };
+
     if (user) {
       checkOnboardingStatus();
     }
-  }, [user]);
+  }, [user, router]);
 
   // Load companion and conversation history
   useEffect(() => {
+    const loadCompanionAndHistory = async () => {
+      try {
+        setIsLoadingHistory(true);
+
+        // Load companion info
+        const companionResponse = await fetch("/api/personality");
+        if (companionResponse.ok) {
+          const companionData = await companionResponse.json();
+          setCompanion(companionData.companion);
+        }
+
+        // Load conversation history
+        const historyResponse = await fetch("/api/chat/simplified");
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          setMessages(historyData.messages || []);
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        toast.error("Failed to load conversation history");
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
     if (user && !isCheckingOnboarding) {
       loadCompanionAndHistory();
     }
   }, [user, isCheckingOnboarding]);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const checkOnboardingStatus = async () => {
-    try {
-      const response = await fetch("/api/personality");
-      if (response.ok) {
-        const data = await response.json();
-        if (!data.companion) {
-          router.push("/onboarding/simplified");
-          return;
-        }
-      } else {
-        router.push("/onboarding/simplified");
-        return;
-      }
-    } catch (error) {
-      console.error("Error checking onboarding status:", error);
-      router.push("/onboarding/simplified");
-      return;
-    } finally {
-      setIsCheckingOnboarding(false);
-    }
-  };
-
-  const loadCompanionAndHistory = async () => {
-    try {
-      setIsLoadingHistory(true);
-
-      // Load companion info
-      const companionResponse = await fetch("/api/personality");
-      if (companionResponse.ok) {
-        const companionData = await companionResponse.json();
-        setCompanion(companionData.companion);
-      }
-
-      // Load conversation history
-      const historyResponse = await fetch("/api/chat/simplified");
-      if (historyResponse.ok) {
-        const historyData = await historyResponse.json();
-        setMessages(historyData.messages || []);
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast.error("Failed to load conversation history");
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
 
   const handleSendMessage = async (
     message: string,
@@ -226,8 +217,8 @@ export default function SimplifiedChatPageV2() {
       } finally {
         reader.releaseLock();
       }
-    } catch (error: any) {
-      if (error.name === "AbortError") {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === "AbortError") {
         console.log("Request aborted");
         return;
       }
@@ -323,7 +314,6 @@ export default function SimplifiedChatPageV2() {
     };
 
     setBranches((prev) => [...prev, newBranch]);
-    setCurrentBranch(newBranch.id);
     toast.success(`Created ${branchName}`);
   };
 
@@ -418,7 +408,7 @@ export default function SimplifiedChatPageV2() {
           </div>
         ) : (
           <AnimatePresence>
-            {messages.map((message, index) => {
+            {messages.map((message) => {
               const isUser = message.role === "user";
               const isEditing = editingMessage === message.id;
 
@@ -499,6 +489,74 @@ export default function SimplifiedChatPageV2() {
                           </div>
                         ) : (
                           <div className="space-y-2">
+                            {/* WhatsApp-style Reply Context */}
+                            {message.parentId && (
+                              <div className="mb-3">
+                                {(() => {
+                                  const replyToMsg = messages.find(
+                                    (m) => m.id === message.parentId
+                                  );
+                                  if (!replyToMsg) return null;
+
+                                  return (
+                                    <div
+                                      className={`
+                                      border-l-4 pl-3 py-2 rounded-r-md text-xs reply-context cursor-pointer
+                                      ${
+                                        isUser
+                                          ? "border-primary-foreground/30 bg-primary-foreground/10 hover:bg-primary-foreground/20"
+                                          : "border-primary/30 bg-primary/10 hover:bg-primary/20"
+                                      }
+                                    `}
+                                    >
+                                      <div
+                                        className={`
+                                        font-medium mb-1 flex items-center gap-2
+                                        ${
+                                          isUser
+                                            ? "text-primary-foreground/80"
+                                            : "text-primary"
+                                        }
+                                      `}
+                                      >
+                                        {replyToMsg.role === "user" ? (
+                                          <Users className="h-3 w-3" />
+                                        ) : (
+                                          <Bot className="h-3 w-3" />
+                                        )}
+                                        {replyToMsg.role === "user"
+                                          ? "You"
+                                          : companion?.name || "AI"}
+                                      </div>
+                                      <div
+                                        className={`
+                                        line-clamp-2 leading-relaxed
+                                        ${
+                                          isUser
+                                            ? "text-primary-foreground/70"
+                                            : "text-muted-foreground"
+                                        }
+                                      `}
+                                        style={{
+                                          display: "-webkit-box",
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: "vertical",
+                                          overflow: "hidden",
+                                        }}
+                                      >
+                                        {replyToMsg.content.length > 80
+                                          ? `${replyToMsg.content.substring(
+                                              0,
+                                              80
+                                            )}...`
+                                          : replyToMsg.content}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            )}
+
                             <p className="text-sm leading-relaxed whitespace-pre-wrap">
                               {message.content}
                             </p>

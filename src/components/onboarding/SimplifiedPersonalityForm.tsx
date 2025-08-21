@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -43,6 +44,7 @@ export default function SimplifiedPersonalityForm({
     communicationStyle: initialData?.communicationStyle || "casual",
     userPreferredAddress: initialData?.userPreferredAddress || "you",
     partnerPronouns: initialData?.partnerPronouns || "they/them",
+    backStory: initialData?.backStory || "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -331,6 +333,30 @@ export default function SimplifiedPersonalityForm({
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
+            </motion.div>
+
+            {/* BackStory Field */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="space-y-2 col-span-2"
+            >
+              <Label htmlFor="back-story">
+                {companionName}&apos;s Background Story (Optional)
+              </Label>
+              <Textarea
+                id="back-story"
+                value={personality.backStory}
+                onChange={(e) => handleInputChange("backStory", e.target.value)}
+                placeholder="Describe your companion's background, history, personality details, or any narrative that helps define who they are..."
+                className="min-h-[100px] resize-none"
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">
+                Add depth to your companion with a background story. This helps
+                the AI understand their personality, history, and unique traits.
+              </p>
             </motion.div>
           </div>
         </CardContent>

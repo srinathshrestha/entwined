@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -42,10 +43,12 @@ import {
   Star,
   AlertTriangle,
   Camera,
+  Palette,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SimplifiedMemory } from "@/types";
 import AvatarSelection from "@/components/settings/AvatarSelection";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface CompanionData {
   name: string;
@@ -59,6 +62,7 @@ interface CompanionData {
   userPreferredAddress: string;
   partnerPronouns: string;
   avatarUrl?: string;
+  backStory?: string;
 }
 
 export default function SettingsPage() {
@@ -250,9 +254,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-sm border-b border-purple-200 px-4 py-4 sticky top-0 z-10">
+      <div className="bg-background/90 backdrop-blur-sm border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -274,7 +278,7 @@ export default function SettingsPage() {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <Tabs defaultValue="personality" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger
               value="personality"
               className="flex items-center gap-2"
@@ -283,6 +287,9 @@ export default function SettingsPage() {
             </TabsTrigger>
             <TabsTrigger value="avatar" className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
             </TabsTrigger>
             <TabsTrigger value="memories" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
@@ -328,6 +335,22 @@ export default function SettingsPage() {
                       }
                     />
                   </div>
+                </div>
+
+                {/* Backstory */}
+                <div className="space-y-2">
+                  <Label>Backstory</Label>
+                  <textarea
+                    className="w-full p-3 border border-gray-300 rounded-md resize-y focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[100px] max-h-[300px]"
+                    placeholder="Describe your companion's background, history, and past experiences..."
+                    rows={4}
+                    value={companionData.backStory || ""}
+                    onChange={(e) =>
+                      setCompanionData((prev) =>
+                        prev ? { ...prev, backStory: e.target.value } : null
+                      )
+                    }
+                  />
                 </div>
 
                 {/* Personality Traits */}
@@ -468,8 +491,6 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </TabsContent>
-
-          {/* Avatar Selection */}
           <TabsContent value="avatar" className="space-y-6">
             <Card>
               <CardHeader>
@@ -484,6 +505,64 @@ export default function SettingsPage() {
                   onAvatarSelect={handleAvatarUpdate}
                   isLoading={isUpdating}
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Appearance Settings */}
+          <TabsContent value="appearance" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-purple-600" />
+                  Theme & Appearance
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Customize the visual appearance of your app
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Theme Toggle Section */}
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium">Color Theme</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Choose between light, dark, or system theme
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                    <div className="space-y-1">
+                      <div className="font-medium">Theme Mode</div>
+                      <div className="text-sm text-muted-foreground">
+                        Switch between light and dark appearance
+                      </div>
+                    </div>
+                    <ThemeToggle />
+                  </div>
+                </div>
+
+                {/* Additional appearance settings can be added here */}
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-medium">
+                      Display Settings
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      More appearance options coming soon
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-muted/50 rounded-lg border-2 border-dashed border-border">
+                    <div className="text-center text-muted-foreground">
+                      <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">
+                        Additional theme customization options will be available
+                        in future updates
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -504,7 +583,7 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Memory Controls */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="text-sm text-gray-600">
                     {selectedMemories.length > 0 ? (
                       <span>{selectedMemories.length} memories selected</span>
@@ -518,14 +597,16 @@ export default function SettingsPage() {
                       size="sm"
                       onClick={selectAllMemories}
                     >
-                      Select All
+                      <span className="sm:hidden">All</span>
+                      <span className="hidden sm:inline">Select All</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={clearSelection}
                     >
-                      Clear Selection
+                      <span className="sm:hidden">Clear</span>
+                      <span className="hidden sm:inline">Clear Selection</span>
                     </Button>
                     {selectedMemories.length > 0 && (
                       <Dialog
@@ -535,7 +616,10 @@ export default function SettingsPage() {
                         <DialogTrigger asChild>
                           <Button variant="destructive" size="sm">
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete Selected
+                            <span className="sm:hidden">Delete</span>
+                            <span className="hidden sm:inline">
+                              Delete Selected
+                            </span>
                           </Button>
                         </DialogTrigger>
                         <DialogContent>

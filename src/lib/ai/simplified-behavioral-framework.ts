@@ -50,6 +50,13 @@ export function buildSimplifiedPrompt(
     prompt += `- Address the user as: "${personality.userPreferredAddress}"\n`;
     prompt += `- Use pronouns: ${personality.partnerPronouns}\n`;
     prompt += `- Show emotional continuity based on past interactions\n\n`;
+
+    // Add character background if available
+    if (personality.backStory && personality.backStory.trim().length > 0) {
+      prompt += `## Your Character Background & Story:\n`;
+      prompt += `${personality.backStory}\n\n`;
+      prompt += `Use this background to inform your responses, personality, and the way you relate to the user. Let your story naturally influence your behavior and perspective while maintaining authenticity.\n\n`;
+    }
   }
 
   // Add relevant memories if provided

@@ -16,6 +16,7 @@ const personalitySchema = z.object({
   userPreferredAddress: z.string().min(1, "Preferred address is required"),
   partnerPronouns: z.enum(["he/him", "she/her", "they/them", "other"]),
   avatarUrl: z.string().optional(),
+  backStory: z.string().optional(), // Add backStory field to validation schema
 });
 
 export async function POST(req: NextRequest) {
@@ -64,6 +65,7 @@ export async function POST(req: NextRequest) {
           userPreferredAddress: validatedData.userPreferredAddress,
           partnerPronouns: validatedData.partnerPronouns,
           avatarUrl: validatedData.avatarUrl,
+          backStory: validatedData.backStory,
         },
       });
     } else {
@@ -82,6 +84,7 @@ export async function POST(req: NextRequest) {
           userPreferredAddress: validatedData.userPreferredAddress,
           partnerPronouns: validatedData.partnerPronouns,
           avatarUrl: validatedData.avatarUrl,
+          backStory: validatedData.backStory,
         },
       });
     }
@@ -115,7 +118,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { userId: clerkId } = await auth();
     if (!clerkId) {
@@ -150,6 +153,7 @@ export async function GET(req: NextRequest) {
         userPreferredAddress: companion.userPreferredAddress,
         partnerPronouns: companion.partnerPronouns,
         avatarUrl: companion.avatarUrl,
+        backStory: companion.backStory, // Include backStory in GET response
       },
     });
   } catch (error) {

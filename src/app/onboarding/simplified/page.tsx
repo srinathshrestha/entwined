@@ -80,14 +80,14 @@ export default function SimplifiedOnboardingPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
         <motion.div
@@ -117,18 +117,18 @@ export default function SimplifiedOnboardingPage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-full ${
                 step === "basic"
                   ? "bg-purple-600 text-white"
-                  : "bg-white text-purple-600"
+                  : "bg-background text-primary"
               }`}
             >
               <User className="h-4 w-4" />
               <span className="text-sm font-medium">Basic Info</span>
             </div>
-            <div className="w-8 h-0.5 bg-gray-300"></div>
+            <div className="w-8 h-0.5 bg-border"></div>
             <div
               className={`flex items-center gap-2 px-4 py-2 rounded-full ${
                 step === "personality"
                   ? "bg-purple-600 text-white"
-                  : "bg-white text-purple-600"
+                  : "bg-background text-primary"
               }`}
             >
               <Sparkles className="h-4 w-4" />

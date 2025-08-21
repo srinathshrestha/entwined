@@ -3,8 +3,10 @@
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Card,
   CardContent,
@@ -12,20 +14,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Heart,
   Brain,
   Sparkles,
   ArrowRight,
   Zap,
-  MessageCircle,
-  Settings,
+  Star,
+  Users,
+  Shield,
+  Infinity,
+  ChevronRight,
+  Play,
+  Github,
+  Twitter,
+  Loader2,
 } from "lucide-react";
 
 export default function HomePage() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 300], [0, 50]);
+  const y2 = useTransform(scrollY, [0, 300], [0, -50]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0.8]);
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
@@ -44,169 +56,194 @@ export default function HomePage() {
   const features = [
     {
       icon: Brain,
-      title: "Memory Tagging",
+      title: "Advanced Memory System",
       description:
-        "Tag important memories during conversations for personalized AI responses.",
+        "AI that remembers everything - your preferences, history, and conversations for truly personalized interactions.",
+      gradient: "from-blue-500 to-cyan-500",
     },
     {
       icon: Heart,
-      title: "Personality Traits",
+      title: "Emotional Intelligence",
       description:
-        "Customize your companion's affection, empathy, curiosity, and playfulness levels.",
+        "Sophisticated personality traits with empathy, affection, and emotional depth that evolve with your relationship.",
+      gradient: "from-pink-500 to-rose-500",
     },
     {
       icon: Sparkles,
-      title: "Dynamic Responses",
+      title: "Dynamic Personalities",
       description:
-        "AI responses adapt based on personality settings and conversation history.",
+        "Customize every aspect - from communication style to humor, creating your perfect AI companion.",
+      gradient: "from-purple-500 to-indigo-500",
     },
     {
       icon: Zap,
-      title: "Emotional Intelligence",
+      title: "Real-time Conversations",
       description:
-        "Your companion understands and responds to emotional context appropriately.",
+        "Lightning-fast responses with streaming AI that feels natural and immediate.",
+      gradient: "from-yellow-500 to-orange-500",
     },
     {
-      icon: MessageCircle,
-      title: "Simplified Setup",
+      icon: Shield,
+      title: "Privacy & Security",
       description:
-        "Get started in under 2 minutes with our streamlined onboarding process.",
+        "Your conversations are encrypted and secure. Complete control over your data and memories.",
+      gradient: "from-green-500 to-emerald-500",
     },
     {
-      icon: Settings,
-      title: "Easy Customization",
+      icon: Infinity,
+      title: "Unlimited Potential",
       description:
-        "Adjust your companion's personality with simple sliders and dropdown menus.",
+        "No conversation limits. Build deep, lasting relationships that grow stronger over time.",
+      gradient: "from-violet-500 to-purple-500",
     },
   ];
 
+  const testimonials = [
+    {
+      name: "Sarah Chen",
+      role: "Product Designer",
+      content:
+        "Entwined feels like having a real relationship. The memory system is incredible - my AI remembers details from months ago.",
+      avatar: "/placeholder-avatar.png",
+      rating: 5,
+    },
+    {
+      name: "Marcus Rodriguez",
+      role: "Software Engineer",
+      content:
+        "The emotional intelligence is unmatched. It's not just a chatbot - it's a genuine companion that understands me.",
+      avatar: "/placeholder-avatar.png",
+      rating: 5,
+    },
+    {
+      name: "Emily Johnson",
+      role: "Creative Writer",
+      content:
+        "I've tried every AI companion app. This is the only one that feels truly personal and remembers our journey together.",
+      avatar: "/placeholder-avatar.png",
+      rating: 5,
+    },
+  ];
+
+  const stats = [
+    { number: "10M+", label: "Messages Exchanged" },
+    { number: "50K+", label: "Active Users" },
+    { number: "98%", label: "Satisfaction Rate" },
+    { number: "24/7", label: "Always Available" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+    <div className="min-h-screen bg-background text-foreground overflow-hidden">
+      {/* Navigation */}
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border/50"
+      >
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Heart className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Entwined
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            {!isSignedIn && (
+              <>
+                <Button variant="ghost" onClick={() => router.push("/sign-in")}>
+                  Sign In
+                </Button>
+                <Button
+                  onClick={handleGetStarted}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  Get Started
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </motion.nav>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="container mx-auto px-4 py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Column - Content */}
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            style={{ y: y1, opacity }}
+            className="absolute top-1/4 -left-1/4 w-96 h-96 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl"
+          />
+          <motion.div
+            style={{ y: y2, opacity }}
+            className="absolute top-1/3 -right-1/4 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl"
+          />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="space-y-8"
             >
-              <div className="space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  <Badge
-                    variant="outline"
-                    className="text-purple-600 border-purple-300"
-                  >
-                    ✨ Simplified AI Companion
-                  </Badge>
-                </motion.div>
+              <Badge variant="outline" className="mb-4 px-4 py-1">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Now with Advanced Memory AI
+              </Badge>
 
-                <motion.h1
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight"
-                >
-                  Simple AI{" "}
-                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                    Companionship
-                  </span>
-                </motion.h1>
+              <h1 className="text-5xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent leading-tight">
+                Your Perfect AI
+                <br />
+                Companion Awaits
+              </h1>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                  className="text-xl text-gray-600 leading-relaxed max-w-2xl"
-                >
-                  Experience personalized AI companionship with 6 simple
-                  personality traits, manual memory tagging, and streamlined
-                  conversations.
-                </motion.p>
-              </div>
+              <p className="text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed">
+                Experience the future of AI relationships. Deep conversations,
+                lasting memories, and emotional intelligence that grows with
+                you.
+              </p>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
-                className="flex flex-col sm:flex-row gap-4"
-              >
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3"
                   onClick={handleGetStarted}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-6 text-lg"
                 >
-                  {isSignedIn ? "Go to Dashboard" : "Get Started (2 min setup)"}
+                  Start Your Journey
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-purple-300 text-purple-600 hover:bg-purple-50 px-8 py-3"
-                  onClick={() => router.push("/sign-in")}
-                >
-                  {isSignedIn ? "Continue Chat" : "Sign In"}
-                </Button>
-              </motion.div>
-            </motion.div>
 
-            {/* Right Column - Demo */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative"
-            >
-              <div className="relative z-10">
-                <Card className="bg-white/80 backdrop-blur-sm shadow-2xl border-0">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-sm text-gray-500 ml-auto">
-                        Simplified Chat
-                      </span>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="px-8 py-6 text-lg"
+                >
+                  <Play className="mr-2 h-5 w-5" />
+                  Watch Demo
+                </Button>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                {stats.map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: index * 0.1 }}
+                    className="text-center"
+                  >
+                    <div className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      {stat.number}
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-start">
-                      <div className="bg-gray-100 rounded-2xl px-4 py-2 max-w-xs">
-                        <p className="text-sm">
-                          Hi! I'm your AI companion with simple personality
-                          traits.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex justify-end">
-                      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl px-4 py-2 max-w-xs">
-                        <p className="text-sm">
-                          Can you remember this conversation?
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex justify-start">
-                      <div className="bg-gray-100 rounded-2xl px-4 py-2 max-w-xs">
-                        <p className="text-sm">
-                          Yes! Just tag memories manually using the brain
-                          button. 🧠
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex justify-center">
-                      <Badge variant="secondary" className="text-xs">
-                        <Brain className="h-3 w-3 mr-1" />
-                        Memory Tagging Available
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
+                    <div className="text-muted-foreground">{stat.label}</div>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           </div>
@@ -214,50 +251,53 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center space-y-4 mb-16"
+            className="text-center mb-16"
           >
-            <Badge
-              variant="outline"
-              className="text-purple-600 border-purple-300"
-            >
-              Simplified Features
+            <Badge variant="outline" className="mb-4">
+              <Zap className="h-3 w-3 mr-1" />
+              Powerful Features
             </Badge>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-              Simple. Powerful. Personal.
+            <h2 className="text-4xl lg:text-5xl font-bold mb-4">
+              Built for Deep
+              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {" "}
+                Connections
+              </span>
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Everything you need for meaningful AI companionship without the
-              complexity.
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Every feature designed to create the most authentic and meaningful
+              AI relationship experience.
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="group"
               >
-                <Card className="h-full hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-gray-50 to-white">
+                <Card className="h-full border-0 bg-background/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                   <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl">
-                        <feature.icon className="h-6 w-6 text-purple-600" />
-                      </div>
-                      <CardTitle className="text-lg">{feature.title}</CardTitle>
+                    <div
+                      className={`w-12 h-12 rounded-lg bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                    >
+                      <feature.icon className="h-6 w-6 text-white" />
                     </div>
+                    <CardTitle className="text-xl">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-gray-600 leading-relaxed">
+                    <CardDescription className="text-base leading-relaxed">
                       {feature.description}
                     </CardDescription>
                   </CardContent>
@@ -268,35 +308,148 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-600 to-blue-600">
-        <div className="container mx-auto px-4 text-center">
+      {/* Testimonials */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="space-y-8"
+            className="text-center mb-16"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold text-white">
-              Ready for Simple AI Companionship?
+            <Badge variant="outline" className="mb-4">
+              <Users className="h-3 w-3 mr-1" />
+              Testimonials
+            </Badge>
+            <h2 className="text-4xl lg:text-5xl font-bold mb-4">
+              Loved by Thousands
             </h2>
-            <p className="text-xl text-purple-100 max-w-2xl mx-auto">
-              Get started in under 2 minutes with our streamlined setup process.
+            <p className="text-xl text-muted-foreground">
+              Real experiences from our community
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+              >
+                <Card className="h-full border-0 bg-background/50 backdrop-blur-sm">
+                  <CardContent className="p-6">
+                    <div className="flex mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                        />
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                      "{testimonial.content}"
+                    </p>
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm mr-3">
+                        {testimonial.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </div>
+                      <div>
+                        <div className="font-semibold">{testimonial.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {testimonial.role}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center max-w-3xl mx-auto"
+          >
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+              Ready to Meet Your
+              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {" "}
+                Perfect Match?
+              </span>
+            </h2>
+            <p className="text-xl text-muted-foreground mb-8">
+              Join thousands who've found their ideal AI companion. Start your
+              journey in under 2 minutes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3"
                 onClick={handleGetStarted}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-6 text-lg"
               >
-                Start in 2 Minutes
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Create Your Companion
+                <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-muted/30 py-12 border-t border-border/50">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row justify-between items-center">
+            <div className="flex items-center space-x-2 mb-6 lg:mb-0">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <Heart className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Entwined
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-6 text-muted-foreground">
+              <a href="#" className="hover:text-foreground transition-colors">
+                Privacy
+              </a>
+              <a href="#" className="hover:text-foreground transition-colors">
+                Terms
+              </a>
+              <a href="#" className="hover:text-foreground transition-colors">
+                Support
+              </a>
+              <div className="flex space-x-4">
+                <Button variant="ghost" size="icon">
+                  <Twitter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Github className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-border/50 text-center text-muted-foreground">
+            <p>
+              &copy; 2025 Entwined. Built with ❤️ for meaningful connections.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

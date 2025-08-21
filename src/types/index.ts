@@ -54,6 +54,9 @@ export interface SimplifiedPersonality {
   // Interaction Preferences
   userPreferredAddress: string; // How to address the user (name, nickname, etc.)
   partnerPronouns: "he/him" | "she/her" | "they/them" | "other";
+
+  // Character Background & Story
+  backStory?: string; // Detailed character background, history, and personality narrative
 }
 
 export interface SimplifiedMemory {

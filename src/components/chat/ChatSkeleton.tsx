@@ -41,9 +41,9 @@ export function AssistantMessageSkeleton() {
         <div className="flex flex-col space-y-2 flex-1">
           {/* Message content skeleton - multiple lines for longer responses */}
           <div className="space-y-2">
-            <ShimmerSkeleton className="h-4 w-full rounded-2xl bg-gray-100" />
-            <ShimmerSkeleton className="h-4 w-4/5 rounded-2xl bg-gray-100" />
-            <ShimmerSkeleton className="h-4 w-3/4 rounded-2xl bg-gray-100" />
+            <ShimmerSkeleton className="h-4 w-full rounded-2xl bg-muted" />
+            <ShimmerSkeleton className="h-4 w-4/5 rounded-2xl bg-muted" />
+            <ShimmerSkeleton className="h-4 w-3/4 rounded-2xl bg-muted" />
           </div>
           {/* Timestamp skeleton */}
           <ShimmerSkeleton className="h-3 w-16" />
@@ -63,12 +63,12 @@ export function TypingIndicatorSkeleton() {
         {/* Avatar skeleton */}
         <PulseSkeleton className="w-8 h-8 rounded-full flex-shrink-0" />
 
-        <div className="bg-gray-100 rounded-2xl rounded-bl-md p-4">
+        <div className="bg-muted rounded-2xl rounded-bl-md p-4">
           <div className="flex space-x-1">
             {/* Animated dots for typing indicator */}
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
           </div>
         </div>
       </div>
@@ -97,7 +97,7 @@ export function ChatHistorySkeleton() {
  */
 export function ChatHeaderSkeleton() {
   return (
-    <div className="bg-white border-b border-gray-200 p-4">
+    <div className="bg-background border-b border-border p-4">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {/* Companion avatar skeleton */}
@@ -131,7 +131,7 @@ export function ChatPageSkeleton() {
       </div>
 
       {/* Input area skeleton */}
-      <div className="bg-white border-t border-gray-200 p-4">
+      <div className="bg-background border-t border-border p-4">
         <div className="max-w-4xl mx-auto flex items-end space-x-2">
           <ShimmerSkeleton className="flex-1 h-11 rounded-2xl" />
           <PulseSkeleton className="w-10 h-10 rounded-full" />
